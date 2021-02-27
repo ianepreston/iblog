@@ -1,0 +1,407 @@
+<h1 id="building-pfsense">Building pfsense</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#building-pfsense" id="markdown-toc-building-pfsense">Building pfsense</a>    <ol>
+      <li><a href="#rationale" id="markdown-toc-rationale">Rationale</a>        <ol>
+          <li><a href="#who-this-is-for" id="markdown-toc-who-this-is-for">Who this is for</a></li>
+          <li><a href="#what-this-will-cover" id="markdown-toc-what-this-will-cover">What this will cover</a></li>
+        </ol>
+      </li>
+      <li><a href="#resources" id="markdown-toc-resources">Resources</a></li>
+      <li><a href="#base-install" id="markdown-toc-base-install">Base Install</a></li>
+      <li><a href="#wizard-setup" id="markdown-toc-wizard-setup">Wizard Setup</a></li>
+      <li><a href="#wifi" id="markdown-toc-wifi">WiFi</a>        <ol>
+          <li><a href="#addendum" id="markdown-toc-addendum">Addendum</a></li>
+        </ol>
+      </li>
+      <li><a href="#webui-overview-and-general-setup" id="markdown-toc-webui-overview-and-general-setup">WebUI Overview and general setup</a>        <ol>
+          <li><a href="#system--general-setup" id="markdown-toc-system--general-setup">System / General Setup</a></li>
+          <li><a href="#system--advanced--admin-access" id="markdown-toc-system--advanced--admin-access">System / Advanced / Admin Access</a></li>
+          <li><a href="#system--advanced--firewall--nat" id="markdown-toc-system--advanced--firewall--nat">System / Advanced / Firewall &amp; NAT</a></li>
+          <li><a href="#system--advanced--networking" id="markdown-toc-system--advanced--networking">System / Advanced / Networking</a></li>
+          <li><a href="#system--advanced--miscellaneous" id="markdown-toc-system--advanced--miscellaneous">System / Advanced / Miscellaneous</a></li>
+          <li><a href="#system--advanced--notifications" id="markdown-toc-system--advanced--notifications">System / Advanced / Notifications</a></li>
+          <li><a href="#interfaces--wan-and-lan" id="markdown-toc-interfaces--wan-and-lan">Interfaces / WAN (and LAN)</a></li>
+          <li><a href="#dashboard" id="markdown-toc-dashboard">Dashboard</a></li>
+        </ol>
+      </li>
+      <li><a href="#ntp-server" id="markdown-toc-ntp-server">NTP Server</a></li>
+      <li><a href="#dhcp" id="markdown-toc-dhcp">DHCP</a>        <ol>
+          <li><a href="#static-mappings" id="markdown-toc-static-mappings">Static Mappings</a></li>
+        </ol>
+      </li>
+      <li><a href="#dns" id="markdown-toc-dns">DNS</a></li>
+      <li><a href="#pfblocker---ad-and-geoblocking" id="markdown-toc-pfblocker---ad-and-geoblocking">Pfblocker - ad and geoblocking</a></li>
+      <li><a href="#dynamic-dns" id="markdown-toc-dynamic-dns">Dynamic DNS</a></li>
+      <li><a href="#openvpn---secure-remote-access" id="markdown-toc-openvpn---secure-remote-access">OpenVPN - secure remote access</a>        <ol>
+          <li><a href="#basic-setup" id="markdown-toc-basic-setup">Basic Setup</a>            <ol>
+              <li><a href="#dns-resolution" id="markdown-toc-dns-resolution">DNS resolution</a></li>
+            </ol>
+          </li>
+          <li><a href="#create-users" id="markdown-toc-create-users">Create Users</a></li>
+          <li><a href="#export-keys-to-devices" id="markdown-toc-export-keys-to-devices">Export keys to devices</a></li>
+        </ol>
+      </li>
+      <li><a href="#conclusion" id="markdown-toc-conclusion">Conclusion</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="rationale">Rationale</h2>
+
+<h3 id="who-this-is-for">Who this is for</h3>
+
+<p>This guide is mostly for me. I’m trying to get better at documenting all the tech stuff I do on my home system, both to ensure I have a decent understanding of what I’m doing, and also to ensure I can reproduce it if I need to rebuild at some point in the future. This guide is heavily reliant on the guidance from Mark Furneaux in his <a href="https://www.youtube.com/watch?v=agieD5uiwYY&amp;list=PLE726R7YUJTePGvo0Zga2juUBxxFTH4Bk&amp;index=1">YouTube series</a> on the topic. The first video in that playlist provides a good overview of what pfsense is and why you might want to install it. If you watch that video and think you might like to install pfsense, but don’t want to watch about 9 hours of YouTube to figure out how to set it up, this might come in handy for you as well.</p>
+
+<h3 id="what-this-will-cover">What this will cover</h3>
+
+<p>At a high level this will cover installing and configuring a pfsense box along with a Unifi wireless access point. Hardware selection is not covered here. The table of contents describes the sections of pfsense settings and applications that will be set up over the course of this guide.</p>
+
+<h2 id="resources">Resources</h2>
+
+<p>Besides the <a href="https://docs.netgate.com/">excellent pfsense documentation</a> I relied heavily on a series of YouTube videos from <a href="https://www.youtube.com/watch?v=agieD5uiwYY">Mark Furneaux</a>.</p>
+
+<h2 id="base-install">Base Install</h2>
+
+<p>The instructions on the <a href="https://docs.netgate.com/pfsense/en/latest/install/installing-pfsense.html">install page</a> are pretty good. The link for <a href="https://docs.netgate.com/reference/create-flash-media.html">creating install media</a> is also comprehensive. Since I didn’t deviate from their instructions in any meaningful way and there’s no reason to expect their documentation to go away I’m not going to reiterate the steps in any detail here. Basically flash the installer image to a USB key, boot that in your system and follow the wizard.</p>
+
+<h2 id="wizard-setup">Wizard Setup</h2>
+
+<p>Next we go through the Wizard. I did the bare minimum of config here, preferring to leave the details for once I had a minimally working system set up. From a browser head to <a href="https://192.168.1.1">the default IP</a>. You’ll get prompted that the connection is not secure. We’ll deal with certificates later. For now just hit advanced and proceed.</p>
+
+<p>The first thing you should see is a login page. The default login is admin/pfsense. After that there’s a welcome page for the Wizard, followed by a page describing all the support options that are available. After that we get to the first page to actually populate.</p>
+
+<p><img src="/images/pfsense/pfsense_01_wizard_01.PNG" alt="wizard page" title="first wizard page" /></p>
+
+<p>All that’s necessary on this page is to give your router a name (I went with behemoth because I’m doing an <a href="https://en.wikipedia.org/wiki/The_Expanse_(novel_series)">expanse</a> themed naming scheme). You also need to name your local domain. localcomain seems fine so I left it at that. DNS can be configured here but I left it alone and will configure it later.</p>
+
+<p>Next is time zone, left to default NTP for now but set to my timezone.</p>
+
+<p>My WAN interface is DHCP so I just leave all default.</p>
+
+<p><img src="/images/pfsense/pfsense_01_wizard_02.PNG" alt="wizard page" title="second wizard page" /></p>
+
+<p>The next step is to configure your LAN interface. You can leave it on <code class="language-plaintext highlighter-rouge">192.168.1.1</code> but I prefer to change it. The reason is that <code class="language-plaintext highlighter-rouge">192.168.[1/0].1</code> is a super common address range. If I use that range on my LAN, and then try and VPN back into it from someone else’s network using the same address range it tends to cause issues. The <a href="https://docs.netgate.com/pfsense/en/latest/book/network/understanding-public-and-private-ip-addresses.html">pfsense book</a> has a good chapter on this. The 24 subnet mask is equivalent to <code class="language-plaintext highlighter-rouge">255.255.255.0</code>. If you haven’t seen that notation before, or need to brush up the <a href="https://docs.netgate.com/pfsense/en/latest/book/network/understanding-cidr-subnet-mask-notation.html">pfsense book</a> also has a decent high level introduction.</p>
+
+<p>Next step is to update the admin password - make it something secure and save it somewhere. I use LastPass for everything password related.</p>
+
+<p>Wizard over! You’ll be prompted to reload, and if you changed the LAN IP you might need to release and renew your IP again before it will load up.</p>
+
+<p>Navigate to <a href="https://behemoth">https://behemoth</a> (or whatever you picked for your hostname)- connected!</p>
+
+<h2 id="wifi">WiFi</h2>
+
+<p>So getting WiFi going was a bit of an adventure. This might be too niche for anyone else to benefit from, but I’m sure going to appreciate having it written down somewhere if I need to do it again. My <a href="https://en.wikipedia.org/wiki/Wireless_access_point">WAP</a> is a Ubiquiti Unifi AP AC Lite. All Ubiquiti hardware is managed through a controller. You can buy a physical device from them to serve this function, but they’re at least $130 so nuts to that. When I was planning out this build I read that you can install the controller software right on your pfsense box. That seemed ideal… until I tried it. After much weeping and gnashing of teeth I ended up burning my pfsense install to the ground and starting over. Given I actually hadn’t done much on the setup yet and messing around with getting the controller working involved installing a bunch of software I didn’t want any more and wasn’t sure I could get rid of that seemed like the safest bet. On to plan B. Eventually I’ll probably get a Raspberry pi as a dedicated host for the controller, but for now I don’t have a spare one so I decided to throw it on my server.</p>
+
+<p>The <a href="https://hub.docker.com/r/linuxserver/unifi-controller">saints over at LinuxServer</a> have a container made so I went with that. After resolving a port conflict with one of my other services the controller launched just fine.</p>
+
+<p>After navigating to my server’s IP on port 8443 I got a login prompt where I had to name my controller and then sign into (or create) my ubiquiti account. I set everything to auto optimize and to create one SSID for both 5GHz and 2.4GHz networks.</p>
+
+<p>Up to here everything is super slick, but then I hit problems.</p>
+
+<p><img src="/images/pfsense/wifi_01.PNG" alt="Wi-Fi" title="wifi" /></p>
+
+<p>My WAP showed up on the home page but it was just stuck on “Adopting (Update Required)”. Initial googling suggested that I would have to manually push a firmware update before I could adopt. This didn’t actually solve the issue, but just for reference here’s how you do that:</p>
+
+<p>Check your router to determine what IP the WAP has been assigned. Google for the firmware for your hardware, on the Unifi page you’ll get a download icon and after accepting the terms you’ll get a direct download link. SSH into the WAP, the default username and password are both ubnt.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl &lt;firmware_binary_link_location&gt; <span class="nt">-o</span> /tmp/fwupdate.bin
+syswrapper.sh upgrade2 &amp;
+</code></pre></div></div>
+
+<p>The prompt on the WAP should now show the latest firmware version when you SSH back in. Again, this didn’t fix my issue, but knowing how to push firmware updates might come in handy later so I wanted it recorded.</p>
+
+<p>The actual solution was to hard code where the controller should be broadcasting from. Here’s the <a href="https://community.ui.com/questions/UniFi-is-stuck-at-Adopting/596ee99e-5828-4fa2-930d-e6d3b68deba6">forum post</a> describing it. I had to put in the IP of my server for some reason. I could resolve it by hostname from my other PC, but the WAP itself could only ping it based on the IP. I’ll revisit this after I mess with DNS more later on pfsense.</p>
+
+<p>First click settings in the lower left of the controller page:</p>
+
+<p><img src="/images/pfsense/wifi_02.PNG" alt="WIFI" /></p>
+
+<p>Then on the controller page hard code the IP and host and set “Override host with controller hostname/IP”. I also set “Make controller discoverable on the L2 network” since it’s a locally hosted controller, but I’m not sure that actually made a difference. Doesn’t hurt.</p>
+
+<p><img src="/images/pfsense/wifi_03.PNG" alt="WIFI" /></p>
+
+<p>For now I’m online!</p>
+
+<h3 id="addendum">Addendum</h3>
+
+<p>I have an old Kobo reader. After switching to the Unifi AP I couldn’t get it on the WiFi. An even older Kindle would connect, and my newer Kobo connected after manually entering the SSID, but no luck with the older one. Eventually I found <a href="https://www.reddit.com/r/kobo/comments/6p86sj/no_wifi_since_last_firmware_update/">this reddit thread</a> with the solution. From the Unifi control panel I went to settings -&gt; wireless networks -&gt; &lt;my SSID&gt; -&gt; advanced and unchecked “enable minimum data rate control” for the 2G network. After applying that and trying to connect a few more times I made it online with the Kobo.</p>
+
+<h2 id="webui-overview-and-general-setup">WebUI Overview and general setup</h2>
+
+<p>This section of the guide will follow along with <a href="https://www.youtube.com/watch?v=rgupXMlz3is">part 5.1 of Mark Furneaux’s guide</a>. The video is about 4 years old and based on pfsense 2.3 whereas I’m using 2.4.5, so there may be some minor cosmetic differences. I also want a text representation of his guide, as it will be easier to refer back to later.</p>
+
+<h3 id="system--general-setup">System / General Setup</h3>
+
+<p>Only two minor changes here:
+<img src="/images/pfsense/pfsense_02_general_01.PNG" alt="theming" title="theming" /></p>
+
+<h3 id="system--advanced--admin-access">System / Advanced / Admin Access</h3>
+
+<p>Turn off https since we don’t have a certificate authority (maybe I’ll figure that part out later)</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_02.PNG" alt="admin" /></p>
+
+<p>Change browser tab text so I know what page each tab is on.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_03.PNG" alt="text" /></p>
+
+<p>Enable SSH and change the default port to 2222 (security through obscurity). I’m going to set up keys later, for now let it work with a password but come back and update this later.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_04.PNG" alt="ssh" /></p>
+
+<p>Fun piece of trivia, right as I enabled this my web front-end froze. The actual router was still functioning, but I couldn’t get any web admin. Part of it was that I had to switch from https to http in the URL, but even after that I would hit the login, it would accept my password, and just take me back to the login page. I found <a href="https://www.reddit.com/r/PFSENSE/comments/6r5xpq/switched_to_http_now_webconfigurator_wont_get/">this reddit thread</a> which had the same issue. For me I could connect in using a private browsing window, which led me to try restarting my browser, which fixed it. Computers…</p>
+
+<h3 id="system--advanced--firewall--nat">System / Advanced / Firewall &amp; NAT</h3>
+
+<p>Set Firewall optimization to conservative. I have plenty of CPU and RAM for the size of my network, so why not give idle connections a little longer to hang out? Apparently this can improve VOIP performance.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_05.PNG" alt="firewall" /></p>
+
+<h3 id="system--advanced--networking">System / Advanced / Networking</h3>
+
+<p>For now I’m just going to disable IPv6. I don’t think my ISP supports it and I don’t see the need for it on my LAN. Maybe I’ll revisit that later, but for now turning it off seems like the safer approach.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_06.PNG" alt="ipv6" /></p>
+
+<p>Set everything possible to work on hardware. Given that I have Intel NICs in my router I think I can safely run all of these things. I ran iperf3 between two wired connections as well as <a href="https://www.speedtest.net">speedtest</a> before enabling the settings and then again after. Note that you have to reboot after changing these settings. After the reboot performance was essentially unchanged so I took that as a good sign and kept the settings.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_07.PNG" alt="hardware" /></p>
+
+<h3 id="system--advanced--miscellaneous">System / Advanced / Miscellaneous</h3>
+
+<p>I don’t expect a lot of super heavy CPU needs on this system, so I might as well save some power and heat. I’ll put it on Adaptive to start, but I’ll check out Hiadaptive if some services seem to chug.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_08.PNG" alt="hiadaptive" /></p>
+
+<p>My CPU supports AES-NI and I’ll want that enabled for better VPN performance later.</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_09.PNG" alt="aesni" /></p>
+
+<h3 id="system--advanced--notifications">System / Advanced / Notifications</h3>
+
+<p>I want email notifications if something gets borked on my router. I don’t want to use my actual gmail address to send these notifications though, as I’d like to keep the security on it a lot more locked down. I created a new gmail account just for the router, and then in my account settings (for the router email <em>do not</em> do this for your actual email) I set “less secure apps” to on so that I could enable sending emails with the following settings:</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_10.PNG" alt="notifications" /></p>
+
+<p>After all that I hit “test SMTP settings” and received an email informing me it worked. Hurray!</p>
+
+<h3 id="interfaces--wan-and-lan">Interfaces / WAN (and LAN)</h3>
+
+<p>I’m going to disable IPv6 here since as I discussed I don’t want to use it.</p>
+
+<p>For the LAN I first have to disable the DHCPv6 service:</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_12.PNG" alt="dhcp6" /></p>
+
+<p>And then on each respective interface’s page I can disable IPv6</p>
+
+<p><img src="/images/pfsense/pfsense_02_general_11.PNG" alt="dhcp6" /></p>
+
+<h3 id="dashboard">Dashboard</h3>
+
+<p>Let’s add some widgets! Everyone loves widgets.</p>
+
+<p>Add S.M.A.R.T status so I can see if my hard drive is failing. Services Status to see what’s running. Interface statistics to see if I’m getting any errors, and finally traffic graphs because who doesn’t like a nice live graph?</p>
+
+<h2 id="ntp-server">NTP Server</h2>
+
+<p><a href="https://www.youtube.com/watch?v=h8A5tcUIOcw">YouTube guide here</a></p>
+
+<p>In addition to the pool server that’s automatically configured I’ll add a couple extras to improve synchronization:</p>
+
+<p><img src="/images/pfsense/pfsense_03_ntp_01.PNG" alt="ntp" /></p>
+
+<p>I’ll also enable RDD graphs because it might be fun to see a chart of time drift and recalibration for my system, why not?</p>
+
+<p><img src="/images/pfsense/pfsense_03_ntp_02.PNG" alt="ntp" /></p>
+
+<p>Now that I’ve got a nice fancy NTP server it will be nice to have all the machines on my network in sync for time by using the local pfsense NTP server.</p>
+
+<p>On Windows (I always forget where to find this on Windows) you go to control panel -&gt; date and time -&gt; Internet Time -&gt; Change settings -&gt; change the server to your pfsense router. In my case that’s <code class="language-plaintext highlighter-rouge">behemoth.localdomain</code>. On windows at least it seems like you have to include the <code class="language-plaintext highlighter-rouge">.localdomain</code> part.</p>
+
+<p>On Linux, following <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-time-synchronization-on-ubuntu-18-04">this digitalocean guide</a> first I need to check if I’m using <code class="language-plaintext highlighter-rouge">timesyncd</code> (probably) or ntp:</p>
+
+<p><img src="/images/pfsense/pfsense_03_ntp_03.PNG" alt="ntp" /></p>
+
+<p>Since in this case I’m on timesyncd I’ll have to turn that service off, install ntp, enable it, and then point it to my pfsense box:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>timedatectl set-ntp no
+<span class="c"># Confirm it was disabled</span>
+timedatectl
+<span class="c"># Install ntp (this is for Ubuntu, similar for Arch or whatever)</span>
+<span class="nb">sudo </span>apt update <span class="o">&amp;&amp;</span> <span class="nb">sudo </span>apt <span class="nb">install </span>ntp <span class="nt">-y</span>
+<span class="c"># Check that it loaded</span>
+ntpq <span class="nt">-p</span>
+<span class="c"># check that timedatectl picked it up correctly</span>
+timedatectl
+</code></pre></div></div>
+
+<p>After that I have to edit <code class="language-plaintext highlighter-rouge">/etc/ntp.conf</code> and replace the default pools with just one for my router. Finally I restart the NTP service with <code class="language-plaintext highlighter-rouge">sudo service ntp restart</code> and I can run <code class="language-plaintext highlighter-rouge">ntpq -p</code> one more time to make sure it’s pointing to my server. Everything looks good and now I’ve spent way more time than is reasonable making sure my clocks are perfectly in sync.</p>
+
+<h2 id="dhcp">DHCP</h2>
+
+<p><a href="https://www.youtube.com/watch?v=QC_nXreJCvc">YouTube guide here</a></p>
+
+<p>There are two basic settings I want to change for DHCP. They’re both fairly minor. The first just sets it so that the logs for DHCP activity show my local time zone instead of UTC, which will make them easier to interpret. The second just lets me make pretty graphs if I want.</p>
+
+<p><img src="/images/pfsense/pfsense_04_dhcp_01.PNG" alt="dhcp" /></p>
+
+<p>Since I went to all the trouble of setting up NTP, I’ll set up DHCP to push that server. Note that I had to use the IP of my router here, not the hostname. This doesn’t guarantee DHCP clients will use the NTP server, but it provides the option, so why not?</p>
+
+<p><img src="/images/pfsense/pfsense_04_dhcp_02.PNG" alt="dhcp" /></p>
+
+<h3 id="static-mappings">Static Mappings</h3>
+
+<p>For most of the devices on my network I’d like to give them easy to type and remember names, even if they don’t have the functionality to specify a hostname (or even if they do just to be safe). For one thing this makes it easy to connect to devices, but even for things I don’t want to connect to (like an e-reader) it’s nice to give them an obvious name. That way if I’m looking at the DHCP leases on my network it will be easier to notice a new device. To do this there are two steps. The first is adding a DHCP static mapping for each device, and the second is enabling DNS to resolve those names (skipping ahead a bit since DNS is next). While you can do static mappings from the DHCP services page, it’s actually easier to do from the DHCP status page. Beside each device that’s connected there’s an “add static mask icon” which you can click. After that you just have to fill in an IP, the hostname you want, and an optional description:</p>
+
+<p><img src="/images/pfsense/pfsense_04_dhcp_03.PNG" alt="static mask" /></p>
+
+<p>Since I’m going to set up most of my network this way I’m also going to narrow the range for regular DHCP leases to be handed out back on the DHCP Server service page:</p>
+
+<p><img src="/images/pfsense/pfsense_04_dhcp_04.PNG" alt="static mask" /></p>
+
+<p>After this I’ll have to trigger a release/renew cycle for all devices on the network. The easiest way to do this is probably just reboot the router.</p>
+
+<p>To set a proper hostname on a device here are the instructions relevant to me:</p>
+
+<p>On Linux: edit <code class="language-plaintext highlighter-rouge">/etc/hostname</code> to be whatever you want the hostname to be.</p>
+
+<p>On Android: Who knows? I can’t seem to make this give a proper name. Fortunately I can rely on the name from pfsense.</p>
+
+<p>On Windows: Hit start, type “pc name” and select the entry that comes up, click “Rename this PC” and change it to whatever you want.</p>
+
+<p>The last step is to set the DNS resolver to resolve these names. In services -&gt; DNS resolver I check these two boxes:</p>
+
+<p><img src="/images/pfsense/pfsense_04_dhcp_05.PNG" alt="resolver" /></p>
+
+<p>I think I only need the second one since I gave every client on my network a static lease, but the other one seems nice to have as well, so I’ll enable it.</p>
+
+<h2 id="dns">DNS</h2>
+
+<p><a href="https://www.youtube.com/watch?v=s3VXLIXGazM">Relevant YouTube section</a></p>
+
+<p>To speed up name resolution, I’m going to run <a href="https://code.google.com/archive/p/namebench/downloads">namebench</a>, wait about an hour for it to complete, and then add the three DNS servers that it finds are the fastest, along with <code class="language-plaintext highlighter-rouge">8.8.8.8</code> which is Google’s DNS sever to my DNS server settings under System -&gt; General setup:</p>
+
+<p><img src="/images/pfsense/pfsense_05_dns_01.PNG" alt="servers" /></p>
+
+<p>Respect to my ISP, all the fastest DNS servers are from them, and the two fastest are the ones I was assigned by DHCP. So this probably didn’t really do anything for me. Oh well.</p>
+
+<p>I’m going to add a couple extra settings in services -&gt; DNS resolver:</p>
+
+<p><img src="/images/pfsense/pfsense_05_dns_02.PNG" alt="resolver" /></p>
+
+<p>These should make response times for DNS queries a little faster at the cost of trivial CPU increase.</p>
+
+<p><img src="/images/pfsense/pfsense_05_dns_03.PNG" alt="cache" /></p>
+
+<p>Why not store more names? I have tons of RAM.</p>
+
+<h2 id="pfblocker---ad-and-geoblocking">Pfblocker - ad and geoblocking</h2>
+
+<p>Now we get to the fun stuff. This blocks ads/spam/etc at the network level, which is awesome.</p>
+
+<p>I’m using <a href="https://www.youtube.com/watch?v=OJ8HHwpGxHw">this guide from Lawrence systems</a> as the basis for my setup.</p>
+
+<p>First thing’s first is to install the package, I went with the development version since that’s what was installed in the tutorial I was following:</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_01.PNG" alt="pfblocker install" /></p>
+
+<p>Head over to the settings page:</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_02_install.PNG" alt="pfblocker install" /></p>
+
+<p>Then go through the wizard (this may come up automatically, it didn’t for me):</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_02_wizard.PNG" alt="pfblocker install" /></p>
+
+<p>You get some warnings about how this will wipe your setup. That’s fine, we’re installing fresh. Then you get the first actual input prompt. The defaults are fine for me so I leave them:</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_02_wizard2.PNG" alt="pfblocker install" /></p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_02_wizard3.PNG" alt="pfblocker install" /></p>
+
+<p>And that’s the wizard done! It should auto run an update to download all the blocklists and other goodness. Wait for that to finish.</p>
+
+<p>Set up a MaxMind account for geoblocking and add in my license key:</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_03.PNG" alt="geoblock" /></p>
+
+<p>Enable floating rules (see the video for a discussion on why)</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_04.PNG" alt="floating" /></p>
+
+<p>Enable kill states</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_05.PNG" alt="kill" /></p>
+
+<p>On geoblocking I’m going to deny both for top spammers, and then deny inbound from anywhere except North America. I’m not hosting anything, the only inbound traffic should be me connecting in on VPN (set up later). I’ll have to remember to change this if I go on vacation somewhere off continent. I’m also going to disable logging for now as I don’t really need to look at when this happens. If there’s an issue I’ll turn it back on.</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_06.PNG" alt="geoip" /></p>
+
+<p>And that’s it! I can wait an hour or manually have it reload the settings:</p>
+
+<p><img src="/images/pfsense/pfsense_06_pfblocker_07.PNG" alt="reload" /></p>
+
+<h2 id="dynamic-dns">Dynamic DNS</h2>
+
+<p>Looks like VPN certs will want to be associated with a domain so I guess I should buy a domain and set up dynamic DNS first.</p>
+
+<p>I bought my domain through namecheap. I also repointed this blog to use the domain, so if that all went smoothly this is being read at <a href="blog.ianpreston.ca">blog.ianpreston.ca</a>.</p>
+
+<p><a href="https://www.namecheap.com/support/knowledgebase/article.aspx/36/11/how-do-i-start-using-dynamic-dns">Namecheap</a> has good docs on setting up dynamic DNS. I enabled it following the instructions above (just hit enable under advanced DNS from your domain page).</p>
+
+<p>Then I created an <a href="https://www.namecheap.com/support/knowledgebase/article.aspx/43/11/how-do-i-set-up-a-host-for-dynamic-dns">A+ DNS record</a></p>
+
+<p>Then from pfsense I went to services -&gt; Dynamic DNS and filled in the info for namecheap. Note that the domain part has to be your whole domain. At first I had just the ca part in there with my name and the subdomain in hostname and that didn’t work.</p>
+
+<p>Refreshing the namecheap page confirmed that the dummy IP I’d entered had updated to the correct one, but a ping didn’t work right away. Presumably it takes a while for the DNS records to propagate.</p>
+
+<h2 id="openvpn---secure-remote-access">OpenVPN - secure remote access</h2>
+
+<p>I’m following the <a href="https://docs.netgate.com/pfsense/en/latest/vpn/openvpn/index.html">docs</a> and the <a href="https://docs.netgate.com/pfsense/en/latest/book/vpn/index.html">book</a> for this part. For now I’m going to use OpenVPN. At some point in the future I might switch to <a href="https://www.wireguard.com/">WireGuard</a> as it seems to be the new hotness and is integrated into the latest Linux kernel, but I’m going to wait for official pfsense adoption on that one.</p>
+
+<h3 id="basic-setup">Basic Setup</h3>
+
+<ul>
+  <li>Under VPN -&gt; OpenVPN head to the wizard tab.</li>
+  <li>Leave authentication backend as Local User Access</li>
+  <li>Fill in details for the CA. I left most things the default</li>
+  <li>Same deal for the server cert, most options should persist from the CA</li>
+  <li>Set up general server information
+    <ul>
+      <li>I set hardware crypto on.</li>
+      <li>Tunnel network has to be an IP range not used by your LAN, and it shouldn’t be a common one. Since my LAN uses 172.17.1.0/24 I went with 172.17.2.0/24</li>
+      <li>I left redirect gateway off because I’m just trying to set up LAN access remotely, I don’t need all my traffic tunneled through here if I’m remote</li>
+      <li>Local network points to my LAN so I can access it, so as described above that’s 172.17.1.0/24</li>
+      <li>I set concurrent connections to 10. Probably more than I’ll need but why not?</li>
+      <li>I enabled Inter-Client Communication</li>
+      <li>I set the DNS default domain to localdomain</li>
+      <li>I set DNS Server 1 to 172.17.1.1. These two options should allow me to access my servers by hostname even remotely</li>
+      <li>I set the NTP server to 172.17.1.1 since I went to all the trouble of configuring it</li>
+      <li>I don’t think I need NetBIOS or WINS so I left that blank</li>
+    </ul>
+  </li>
+  <li>Check boxes for both firewall rules</li>
+  <li>Wizard complete, now I want to be able to export settings to clients, so over to System -&gt; package manager and install <code class="language-plaintext highlighter-rouge">openvpn-client-export</code></li>
+</ul>
+
+<h4 id="dns-resolution">DNS resolution</h4>
+
+<p>I’m not sure why I had to set this, but in order to get my client machines to be able to resolve hostnames of servers I had to go into Services -&gt; DNS resolver -&gt; General settings and check “Register connected OpenVPN clients in the DNS resolver”. The way they describe it really sounds like it should allow me to resolve client names, but it fixed my issue so whatever.</p>
+
+<h3 id="create-users">Create Users</h3>
+
+<p>System -&gt; User Manager -&gt; Add User. For users I’m going with the <code class="language-plaintext highlighter-rouge">&lt;person&gt;_&lt;device&gt;_vpn</code> naming convention. So for example my phone’s certificate will be <code class="language-plaintext highlighter-rouge">ian_phone_vpn</code>. I don’t add the user to admins, and I create and store a nice secure password with LastPass. Make a certificate for the user, all the default’s should be fine, just fill in an appropriately descriptive name.</p>
+
+<h3 id="export-keys-to-devices">Export keys to devices</h3>
+
+<p>Back to VPN -&gt; OpenVPN -&gt; Client Export Utility. Since I have dynamic DNS configured I changed over Host Name Resolution to my DynamicDNS name rather than my IP which is the default.</p>
+
+<p>I didn’t mess with any of the defaults. I have the OpenVPN Connect app on my phone so I scrolled down to the user I just created for my phone and clicked “OpenVPN Connect (iOS/Android). Downloaded the file, transferred it to my phone, imported it in the app and was good to go.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>That’s it for now! Everything seems to work well. I’ll update this guide if I make any further changes to my setup.</p>
+
+<p>Last thing to do is go to Diagnostics -&gt; Backup &amp; Restore and save my config, just in case something bad happens.</p>

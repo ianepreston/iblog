@@ -1,0 +1,47 @@
+<h1 id="automating-provisioning-arch-continued---ansible">Automating provisioning Arch continued - Ansible</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#automating-provisioning-arch-continued---ansible" id="markdown-toc-automating-provisioning-arch-continued---ansible">Automating provisioning Arch continued - Ansible</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+      <li><a href="#hashed-passwords" id="markdown-toc-hashed-passwords">Hashed passwords</a></li>
+      <li><a href="#git-clone" id="markdown-toc-git-clone">git clone</a></li>
+      <li><a href="#dconf" id="markdown-toc-dconf">dconf</a></li>
+      <li><a href="#other-resources" id="markdown-toc-other-resources">Other resources</a></li>
+      <li><a href="#conclusion" id="markdown-toc-conclusion">Conclusion</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>My <a href="http://blog.ianpreston.ca/2020/10/14/arch-bootstrap.html">previous post</a> described how to automate a base installation of <a href="https://www.archlinux.org/">Arch</a>. This follow up post will give an overview of the next step of configuration.</p>
+
+<p>After getting a base system setup there is still a ton of administrative tasks to do, like creating a user account and installing software. I accomplished this using <a href="https://www.ansible.com/">Ansible</a>. As with the previous post, I borrowed heavily from <a href="https://github.com/brennanfee/provision-arch">Brennan Fee</a> for the configuration. My copy is <a href="https://github.com/ianepreston/recipes/tree/master/ansible">here</a>. This post won’t be as in depth as the previous one, as the ansible syntax is a lot more directly readable, so in most cases it should be enough to look at the code and maybe consult the <a href="https://docs.ansible.com/">ansible docs</a> to figure out what’s going on. The sections below will outline a few of the parts that were a little tricky.</p>
+
+<h2 id="hashed-passwords">Hashed passwords</h2>
+
+<p>Ansible lets you create a user and include the hash of their password, which means you can have the data available publicly without a security concern. In order to generate a hash of a password refer to <a href="https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module">this section of the ansible FAQ</a></p>
+
+<h2 id="git-clone">git clone</h2>
+
+<p>I had a tricky time with <a href="https://github.com/ianepreston/recipes/blob/master/ansible/roles/dotfiles/tasks/main.yml">this task</a>. I wanted to clone some repositories I controlled using ssh and save them in my home directory. After a lot of googling I determined that trying to become my user and do the clone directly wouldn’t work because ansible wouldn’t know which key to use (I have a separate key for GitHub than for my local network). This task splits it up by cloning into the ansible user directory and then using the copy task to move them over to my home directory and set the correct permissions. A little hacky, but it worked.</p>
+
+<h2 id="dconf">dconf</h2>
+
+<p>You can use ansible to configure your GNOME desktop with the <a href="https://docs.ansible.com/ansible/latest/collections/community/general/dconf_module.html">dconf</a> module. The trickiest part of that is figuring out what key you have to change. <a href="https://opensource.com/article/18/5/manage-your-workstation-ansible-part-3">This blog</a> has the solution I used.</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">dconf dump / &gt; before.txt</code></li>
+  <li>make changes in settings or tweak tool</li>
+  <li><code class="language-plaintext highlighter-rouge">dconf dump / &gt; after.txt</code></li>
+  <li><code class="language-plaintext highlighter-rouge">diff before.txt after.txt</code></li>
+  <li>Figure out what changed and create a dconf task for it.</li>
+</ul>
+
+<h2 id="other-resources">Other resources</h2>
+
+<p>Beyond the links previously mentioned I want to highlight a tutorial series from <a href="https://www.youtube.com/watch?v=goclfp6a2IQ">Jeff Geerling</a> which was excellent and informative. He also wrote a book on ansible that I haven’t read yet but imagine is quite good, given the quality of his video guide, and the fact that I found posts from him a few times when I was googling how to do something.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Ansible is a pretty rad way to reproducibly get your desktop environment set up just the way you like it. It’s a bit overkill given what it’s actually designed for, but it’s a handy skill to learn and it saves rebuilding your environment from scratch.</p>

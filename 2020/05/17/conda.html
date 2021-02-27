@@ -1,0 +1,71 @@
+<h1 id="trouble-with-reproducible-conda-environments">Trouble with reproducible conda environments</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#trouble-with-reproducible-conda-environments" id="markdown-toc-trouble-with-reproducible-conda-environments">Trouble with reproducible conda environments</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+      <li><a href="#the-question" id="markdown-toc-the-question">The question</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>I’m having trouble making reproducible conda environments. I’ve posted the question below on <a href="https://stackoverflow.com/questions/61778631/whats-wrong-with-how-im-attempting-to-create-a-reproducible-conda-environment">Stack Overflow</a> and <a href="https://www.reddit.com/r/learnpython/comments/giek8i/trouble_creating_reproducible_conda_environments/">Reddit</a> but I’ve got nothing. I’m leaving the question here for easy future reference. If I come up with a solution I’ll update this post.</p>
+
+<h2 id="the-question">The question</h2>
+
+<p>Hi everyone.</p>
+
+<p>I’m really struggling to create a reproducible conda environment. I’ll outline the approach I’ve taken so far and the issue I’ve encountered. I’d appreciate any tips for what I can do to troubleshoot next or resources I could check.</p>
+
+<p>As background, I work on a small team, and want to be able to share a copy of an environment I’ve been using with other members of my team so I can be sure we have identical versions of all the libraries required for our work.</p>
+
+<p>My current workflow is as follows:</p>
+
+<ul>
+  <li>Write out an environment file with unpinned dependencies and let conda build the environment</li>
+</ul>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">name</span><span class="pi">:</span> <span class="s">example_env_build</span>
+<span class="na">channels</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">conda-forge</span>
+    <span class="pi">-</span> <span class="s">defaults</span>
+<span class="na">dependencies</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">pandas</span>
+    <span class="pi">-</span> <span class="s">requests</span>
+</code></pre></div></div>
+
+<p>The actual environment has a lot more stuff in it, but that’s the idea</p>
+
+<ul>
+  <li>I then create the environment with <code class="language-plaintext highlighter-rouge">conda env create -f example_env_build.yml</code></li>
+  <li>I export the environment so that all versions and their dependencies will be pinned with <code class="language-plaintext highlighter-rouge">conda env export -n example_env_build --no-builds --file test_export.yml</code>. I added <code class="language-plaintext highlighter-rouge">--no-builds</code> because I was finding the certain builds were getting marked as broken and causing issues and getting the version right seemed close enough for my purposes.</li>
+  <li>I edit the <code class="language-plaintext highlighter-rouge">test_export.yml</code> file and change the name to <code class="language-plaintext highlighter-rouge">example_env</code> and remove the <code class="language-plaintext highlighter-rouge">prefix</code> line from the bottom.</li>
+  <li>I build a new environment with this pinned file just to make sure it goes ok, and then share the file with the rest of my team.</li>
+</ul>
+
+<p>This has generally worked well if everyone tries to build the environment relatively quickly after the file is created. However, the whole point of being able to specify a reproducible environment is that I should be able to recreate that environment at <em>any</em> time. Someone on my team recently got a new computer so I was trying to help her set up her environment and ran into a series of conflicts. To troubleshoot I tried to rebuild the environment on my machine and ran into the same situation.</p>
+
+<p>For troubleshooting I did the following:</p>
+<ul>
+  <li>Clone my environment so I have a backup while I mess around <code class="language-plaintext highlighter-rouge">conda create --name example_env_clone --clone example_env</code></li>
+  <li>Export the environment <code class="language-plaintext highlighter-rouge">conda env export -n example_env --no-builds --file example_env_rebuild.yml</code></li>
+  <li>Delete the example environment so I can rebuild it <code class="language-plaintext highlighter-rouge">conda env remove --name example_env</code></li>
+  <li>Try and recreate the environment I just exported <code class="language-plaintext highlighter-rouge">conda env create -f example_env_rebuild.yml</code></li>
+</ul>
+
+<p>From there I ran into all sorts of version conflicts. I don’t understand this because a) These are all versions being used in a working environment and b) a lot of the “conflicts” don’t seem to be conflicts to me. As an example, here’s one from my current attempt:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Package phik conflicts <span class="k">for</span>:
+<span class="nv">phik</span><span class="o">=</span>0.9.10
+pandas-profiling<span class="o">=</span>2.4.0 -&gt; phik[version<span class="o">=</span><span class="s1">'&gt;=0.9.8'</span><span class="o">]</span>
+</code></pre></div></div>
+
+<p>I picked that one basically at random but there are tons like that. As I read it I’m trying to install phik 0.9.10, and pandas-profiling requires &gt;=0.9.8, which 0.9.10 satisfies.</p>
+
+<p>I’m at my wits end here. I’ve read a million “how to manage conda environments” guides (For example <a href="https://www.leouieda.com/blog/conda-envs.html">this</a>, <a href="https://haveagreatdata.com/posts/data-science-python-dependency-management/">this</a>, and <a href="https://towardsdatascience.com/a-guide-to-conda-environments-bc6180fc533">this</a>) along with the <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">conda environment management docs</a>. All of them seem to indicate what I’m doing should work perfectly fine, but my team and I constantly run into issues.</p>
+
+<p>Has anyone had a similar experience? Is there something I’m missing, or a resource I could consult? I’d greatly appreciate any pointers.</p>
+
+<p>Thanks</p>
+

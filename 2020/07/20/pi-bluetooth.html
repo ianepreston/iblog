@@ -1,0 +1,37 @@
+<h1 id="connecting-a-harmony-remote-to-a-raspberry-pi">Connecting a Harmony remote to a raspberry pi</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#connecting-a-harmony-remote-to-a-raspberry-pi" id="markdown-toc-connecting-a-harmony-remote-to-a-raspberry-pi">Connecting a Harmony remote to a raspberry pi</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+      <li><a href="#get-the-harmony-bluetooth-id" id="markdown-toc-get-the-harmony-bluetooth-id">Get the Harmony Bluetooth ID</a></li>
+      <li><a href="#create-a-device-in-harmony" id="markdown-toc-create-a-device-in-harmony">Create a device in Harmony</a></li>
+      <li><a href="#connect-from-the-pi" id="markdown-toc-connect-from-the-pi">Connect from the pi</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>This is a little stub post for me. I have a Logitech Harmony remote that I use to control a raspberry pi running Kodi for my media center. Occasionally I have to reinstall it and I always have to google a few things to remember how to do it, so this is just to consolidate that info.</p>
+
+<h2 id="get-the-harmony-bluetooth-id">Get the Harmony Bluetooth ID</h2>
+
+<p>Since I don’t have a GUI on my pi beyond Kodi, I have to do all the connecting over the command line. Which means it will be much easier if I have the device ID for the remote available. To find it I pair the remote with a Windows machine, and then from <code class="language-plaintext highlighter-rouge">Control Panel\Hardware and Sound\Devices and Printers</code> I can right click on the device, bring up its properties, and from the bluetooth tab get the unique identifier. For my remote that’s <code class="language-plaintext highlighter-rouge">00:04:20:f8:65:d1</code>.</p>
+
+<h2 id="create-a-device-in-harmony">Create a device in Harmony</h2>
+
+<p>From the Harmony app go to create a new device. Under the manufacturer choose Microsoft and for the device choose Kodi. I always forget this part and just try and set it up as a generic PC, which doesn’t work. When it gets to the pairing part of the setup we can connect from the pi</p>
+
+<h2 id="connect-from-the-pi">Connect from the pi</h2>
+
+<p>SSH into the pi:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>bluetoothctl
+agent on
+default-agent
+pair 00:04:20:f8:65:d1
+connect 00:04:20:f8:65:d1
+trust 00:04:20:f8:65:d1
+</code></pre></div></div>
+
+<p>That should do it. Harmony will say it’s connected, you can also check with <code class="language-plaintext highlighter-rouge">sudo bluetoothctl paired-devices</code>.</p>

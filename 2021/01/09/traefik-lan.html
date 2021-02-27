@@ -1,0 +1,33 @@
+<h1 id="using-traefik-for-internal-services">Using traefik for internal services</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#using-traefik-for-internal-services" id="markdown-toc-using-traefik-for-internal-services">Using traefik for internal services</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+      <li><a href="#the-key-configuration" id="markdown-toc-the-key-configuration">The key configuration</a></li>
+      <li><a href="#setting-up-traefik" id="markdown-toc-setting-up-traefik">Setting up Traefik</a></li>
+      <li><a href="#conclusion" id="markdown-toc-conclusion">Conclusion</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>I have a small server at home that I use to run various services in <a href="https://www.docker.com/">docker</a> containers. I don’t expose any of them to the internet, I can tunnel in through my <a href="http://blog.ianpreston.ca/2020/05/06/pfsense.html#openvpn---secure-remote-access">vpn</a> running on my pfsense router. Because of that up until recently it was enough to just publish the ports of my various services and make a bookmark pointing to my server at that port. Recently I wanted to set up a couple services that both expected to be exposed on port 80, the default http port. Just remapping the port would be insufficient, because their clients did not have options to specify a port to connect on. To get around this issue, I decided to suck it up and learn to use a <a href="https://en.wikipedia.org/wiki/Reverse_proxy">reverse proxy</a>. I looked into both <a href="https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/">nginx</a> and <a href="https://traefik.io/">traefik</a> and settled on traefik. Unfortunately for me, pretty much all the tutorials online expect you to be exposing traefik to the web and have all sorts of stuff about TLS and letsencrypt that don’t matter to me, and don’t really explain how to do the routing if you only want it to work on your internal network. This guide is for me in the future if I ever have to set this up again, and anyone else that’s interested in a similar setup.</p>
+
+<p>This guide isn’t going to cover what a reverse proxy is, or many of the details of traefik, there are lots of good guides for that online. It’s specifically going to cover the configuration specific to a LAN only connection.</p>
+
+<h2 id="the-key-configuration">The key configuration</h2>
+
+<p>My <a href="http://blog.ianpreston.ca/2020/05/06/pfsense.html#dns">pfsense</a> box manages DNS and allows me to resolve machines on my network by their name. For instance, my server is named <code class="language-plaintext highlighter-rouge">mars</code> and if I run <code class="language-plaintext highlighter-rouge">ping mars</code> it will correctly resolve to that machine’s IP. Traefik doesn’t like to play nice with that naming convetion though, at least I couldn’t get it to work with all sorts of combinations of <code class="language-plaintext highlighter-rouge">mars</code> and <code class="language-plaintext highlighter-rouge">mars.localdomain</code>. Fortunately, I found a <a href="https://forum.netgate.com/topic/103737/dns-resolver-host-override">forum post</a> that addressed this issue. In my DNS settings I picked a nice sounding domain that I was sure I wouldn’t actually want to connect to (in my case I used ian.ca) and set my DNS to redirect any requests to that domain to go to my server. To do this, from pfsense I went to services -&gt; DNS resolver, and added two lines to the “custom options” section near the bottom</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>local-zone: "ian.ca" redirect
+local-data: "ian.ca A &lt;my server IP&gt;"
+</code></pre></div></div>
+
+<h2 id="setting-up-traefik">Setting up Traefik</h2>
+
+<p>Most of the rest of the traefik setup could be borrowed from other basic guides. I configure traefik and all my other docker containers in an ansible role. You can find that <a href="https://github.com/ianepreston/recipes/blob/master/ansible/roles/docker/tasks/main.yml">on my GitHub</a>. A couple small gotchas that I ran into were making sure Traefik was on the same docker network as the containers I wanted it to route, and to remember the difference between exposing ports (available within the docker network) and publishing ports (mapping them to a port on the host).</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This was one of those setups that is straightforward in retrospect, but I had to spend a lot of time googling and banging my head against the wall before I could get the correct combination of configurations to do what I want. Hopefully this is useful to others, or at least me next time I try and do this.</p>

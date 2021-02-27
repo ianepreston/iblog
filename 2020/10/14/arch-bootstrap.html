@@ -1,0 +1,685 @@
+<h1 id="automating-provisioning-arch">Automating provisioning Arch</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#automating-provisioning-arch" id="markdown-toc-automating-provisioning-arch">Automating provisioning Arch</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a>        <ol>
+          <li><a href="#edit-2020-10-20" id="markdown-toc-edit-2020-10-20">edit 2020-10-20</a></li>
+          <li><a href="#actual-introduction" id="markdown-toc-actual-introduction">Actual Introduction</a></li>
+        </ol>
+      </li>
+      <li><a href="#inspiration" id="markdown-toc-inspiration">Inspiration</a></li>
+      <li><a href="#tldr" id="markdown-toc-tldr">TLDR</a>        <ol>
+          <li><a href="#setting-up-wifi" id="markdown-toc-setting-up-wifi">Setting up WiFi</a></li>
+          <li><a href="#make-sure-partitions-are-set-up" id="markdown-toc-make-sure-partitions-are-set-up">Make sure partitions are set up</a></li>
+          <li><a href="#run-the-script" id="markdown-toc-run-the-script">Run the script</a></li>
+          <li><a href="#post-install" id="markdown-toc-post-install">Post install</a></li>
+        </ol>
+      </li>
+      <li><a href="#setting-up-for-testing" id="markdown-toc-setting-up-for-testing">Setting up for testing</a>        <ol>
+          <li><a href="#prepping-the-vm" id="markdown-toc-prepping-the-vm">Prepping the VM</a></li>
+          <li><a href="#getting-the-bootstrap-script-to-the-machine" id="markdown-toc-getting-the-bootstrap-script-to-the-machine">Getting the bootstrap script to the machine</a></li>
+        </ol>
+      </li>
+      <li><a href="#bootstrapping-the-install" id="markdown-toc-bootstrapping-the-install">Bootstrapping the install</a>        <ol>
+          <li><a href="#strict-mode" id="markdown-toc-strict-mode">Strict mode</a></li>
+          <li><a href="#text-formatting" id="markdown-toc-text-formatting">Text formatting</a></li>
+          <li><a href="#setup-paths" id="markdown-toc-setup-paths">Setup paths</a></li>
+          <li><a href="#flags-and-variables" id="markdown-toc-flags-and-variables">Flags and variables</a></li>
+          <li><a href="#user-provided-variables" id="markdown-toc-user-provided-variables">User provided variables</a></li>
+          <li><a href="#common-helper-functions" id="markdown-toc-common-helper-functions">Common helper functions</a></li>
+          <li><a href="#verification-functions" id="markdown-toc-verification-functions">Verification functions</a></li>
+          <li><a href="#prompts--user-interaction" id="markdown-toc-prompts--user-interaction">Prompts / User interaction</a></li>
+          <li><a href="#installationconfiguration-options" id="markdown-toc-installationconfiguration-options">Installation/configuration options</a>            <ol>
+              <li><a href="#partitioning" id="markdown-toc-partitioning">Partitioning</a></li>
+            </ol>
+          </li>
+          <li><a href="#installation" id="markdown-toc-installation">Installation</a></li>
+        </ol>
+      </li>
+      <li><a href="#conclusion-and-next-steps" id="markdown-toc-conclusion-and-next-steps">Conclusion and next steps</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<h3 id="edit-2020-10-20">edit 2020-10-20</h3>
+
+<p>As I use this script to provision machines I’m going to end up making edits to it. I’m not going to edit this post every time I do that. The latest version of the provision script is always available <a href="https://github.com/ianepreston/recipes/blob/master/arch_bootstrap/bootstrap.sh">here</a>.</p>
+
+<p>I’ve also updated the TLDR section a bit based on some experience from the install. That part I will update if I make changes since I use it for reference when building systems.</p>
+
+<h3 id="actual-introduction">Actual Introduction</h3>
+
+<p>I’ve installed a lot of operating systems a lot of times. The goal of writing out this post is to force me to really think about and clearly document a reproducible workflow for building my workstation.</p>
+
+<p>A secondary goal is to get better at bash.</p>
+
+<h2 id="inspiration">Inspiration</h2>
+
+<p>There are a lot of very smart people out there doing similar things. In the past I’ve used Luke Smith’s <a href="https://larbs.xyz/">LARBS</a> as a base that I forked and modified. There was also <a href="https://www.reddit.com/r/archlinux/comments/gle74o/how_do_you_provision_your_system/">this recent discussion on Reddit</a> which pointed me to a couple of very interesting repositories to get inspiration from: <a href="https://github.com/brennanfee/provision-arch">Brennan Fee’s provision-arch</a> and <a href="https://github.com/Foxboron/PKGBUILDS">Morten Linderud’s PKGBUILDS</a></p>
+
+<h2 id="tldr">TLDR</h2>
+
+<p>For future me when I want to actually just install Arch on a system:</p>
+
+<h3 id="setting-up-wifi">Setting up WiFi</h3>
+
+<p>In the case where I’m doing this on a laptop I’ll likely have to get on WiFi before I can continue.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl start iwd.service
+iwctl
+device list <span class="c">#magically changed my device name to wlan0 here somehow</span>
+station wlan0 connect &lt;your SSID&gt;  <span class="c"># You can enclose it in quotes if it has spaces</span>
+&lt;enter passphrase&gt;
+<span class="nb">exit
+</span>dhcpcd wlan0
+</code></pre></div></div>
+
+<p>That should work, try pinging something just to be safe.</p>
+
+<h3 id="make-sure-partitions-are-set-up">Make sure partitions are set up</h3>
+
+<p>I’m a wuss and don’t trust a script to actually create partitions. <code class="language-plaintext highlighter-rouge">lsblk</code> will tell you what disks you have. If you need to create/delete partitions before proceeding use <code class="language-plaintext highlighter-rouge">cfdisk /dev/sd&lt;letter&gt;</code> to create them. If it’s a completely blank hard drive and you need to create a boot partition make one at the beginning of the disk with 500M of space in <code class="language-plaintext highlighter-rouge">cfdisk</code> and then run <code class="language-plaintext highlighter-rouge">mkfs.vfat -F32 /dev/sd&lt;letter&gt;1</code> to format it. There’s probably a cleaner way to clean out the LVMs this script creates but for now it’s easier for me to just blow them away in <code class="language-plaintext highlighter-rouge">cfdisk</code> and create a fresh partition to install over. <em>edit: I got braver. The new script has an option to just wipe the whole disk if you want.</em></p>
+
+<h3 id="run-the-script">Run the script</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash &lt;<span class="o">(</span>curl <span class="nt">-fsSL</span> http://bootstrap.ianpreston.ca<span class="o">)</span>
+</code></pre></div></div>
+
+<h3 id="post-install">Post install</h3>
+
+<ul>
+  <li>Get the Wifi going again. It’s a different command than you use from the installer:</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nmcli device wifi connect &lt;SSID&gt; password &lt;password&gt;
+</code></pre></div></div>
+
+<ul>
+  <li>Set up ssh keys - plug in the USB</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsblk  <span class="c"># find where the partition with the keys is stored</span>
+<span class="nb">mkdir </span>ssh  <span class="c"># make a mount point</span>
+<span class="nb">sudo </span>mount /dev/sd&lt;something&gt; ssh
+<span class="nb">cp</span> <span class="nt">-R</span> ssh ssh_local  <span class="c"># Have to set permissions on keys (stupid NTFS)</span>
+<span class="nb">cd </span>ssh_local/CA
+<span class="nb">chmod </span>600 host_ca
+<span class="nb">chmod </span>600 user_ca
+<span class="nb">cd</span> ../
+<span class="nb">chmod</span> +x setup_host.sh
+<span class="nb">chmod</span> +x setup_user.sh
+<span class="nb">sudo</span> ./setup_host.sh
+./setup_user.sh
+</code></pre></div></div>
+
+<p>After this point you should be able to run ansible to complete the setup.</p>
+
+<h2 id="setting-up-for-testing">Setting up for testing</h2>
+
+<p>I ended up working on this project over a period of time. Initially I was using a VM in Virtualbox. I document the steps for setting that up below. After a while I ended up putting docker on my Windows machine that I was using for testing, and found it conflicted with Virtualbox, so I switched to Hyper-V. Finally I got my hands on a beater notebook and ended up finishing up on that.</p>
+
+<h3 id="prepping-the-vm">Prepping the VM</h3>
+
+<p>First thing to do for any install is <a href="https://www.archlinux.org/download/">download the ISO</a>. I’m going to use <a href="https://www.virtualbox.org/">Virtualbox</a> as my hypervisor. No particular reason, I’ve just used it in the past and am comfortable with it.</p>
+
+<p>Then I create a base image to work off of.</p>
+
+<p><img src="/images/arch/vm_01.PNG" alt="base_vm" /></p>
+
+<p><img src="/images/arch/vm_02.PNG" alt="vm_disk" /></p>
+
+<p>Fire up the new VM, and select the Arch ISO at the prompt:</p>
+
+<p><img src="/images/arch/vm_03.PNG" alt="vm_iso" /></p>
+
+<p>After that we’re at the boot prompt. Now comes the fun task of developing a bootstrap script that will automate the install process.</p>
+
+<p><img src="/images/arch/vm_04.PNG" alt="vm_prompt" /></p>
+
+<h3 id="getting-the-bootstrap-script-to-the-machine">Getting the bootstrap script to the machine</h3>
+
+<p>I’ve created a <a href="https://github.com/ianepreston/recipes">repository on GitHub</a> to host code like this. I think I could probably just install git on the boot machine, clone the whole repo, navigate to the bootstrap script, and run it. That’s no fun though. Let’s see if I can find a more complicated approach just to save a few keystrokes.</p>
+
+<p>The full URL to the raw script is at <a href="https://raw.githubusercontent.com/ianepreston/recipes/arch_bootstrap/arch_bootstrap/bootstrap.sh">this page</a>. That’s pointing to the branch I’m using while I develop the script. When I’ve got it working I’ll hopefully remember to come back here and point it to the master reference. From there I can go to my domain registrar and add a URL redirect record to point an easy to remember subdomain to that path:</p>
+
+<p><img src="/images/arch/DNS_01.PNG" alt="DNS" /></p>
+
+<p>So now <a href="http://bootstrap.ianpreston.ca">bootstrap.ianpreston.ca</a> redirects directly to my shell script.</p>
+
+<p>To actually get the script onto my machine and run it I’ll use <a href="https://curl.haxx.se/">curl</a>. The exact syntax will be</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash &lt;<span class="o">(</span>curl <span class="nt">-fsSL</span> http://bootstrap.ianpreston.ca<span class="o">)</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">-f</code> Specifies that the script should fail silently. Otherwise if there’s an http error it will return a 404 page, which I’d then try and run. I’d rather it just not return anything and fail that way.</p>
+
+<p><code class="language-plaintext highlighter-rouge">-L</code> Specifies that if the server reports that the page has moved then curl will redo the request.</p>
+
+<p><code class="language-plaintext highlighter-rouge">-sS</code> Means the script should run silently, unless there’s a failure, in which case it will show the output. <code class="language-plaintext highlighter-rouge">-S</code> means show error and <code class="language-plaintext highlighter-rouge">-s</code> means silent.</p>
+
+<p>As I’m writing this the shell script doesn’t really do anything, it just prints something out so I know it worked. Here’s where it’s at at this point:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/env bash</span>
+
+<span class="c"># To install: bash &lt;(curl -fsSL http://bootstrap.ianpreston.ca)</span>
+
+<span class="nb">echo</span> <span class="s2">"We got this far!"</span>
+</code></pre></div></div>
+
+<p>As a quick aside, I don’t write bash scripts often, so I often forget how exactly to set up the <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a>. For bash scripts I’ve seen <code class="language-plaintext highlighter-rouge">#!/bin/bash</code> and <code class="language-plaintext highlighter-rouge">#!/usr/bin/env bash</code>. It seems like in most circumstances they’re interchangeable. <a href="https://unix.stackexchange.com/questions/29608/why-is-it-better-to-use-usr-bin-env-name-instead-of-path-to-name-as-my">This StackOverflow</a> post suggests that the latter is slightly more flexible/portable so I’m going to try and make a habit of using it in my scripts going forward.</p>
+
+<p>Back at the VM I test my overly elaborate bootstrapping setup and…</p>
+
+<p><img src="/images/arch/curl_01.PNG" alt="curl" /></p>
+
+<p>Sweet!</p>
+
+<h2 id="bootstrapping-the-install">Bootstrapping the install</h2>
+
+<p>Borrowing liberally from the <a href="https://wiki.archlinux.org/index.php/installation_guide">Arch Install Guide</a> and the previously mentioned arch bootstrap script by <a href="https://github.com/brennanfee/provision-arch/blob/master/bootstrap/arch-install">Brennan Fee</a> let’s build up a script to auto install Arch. The goal isn’t to do everything with the script, we just need to get to a minimal environment with an SSH server so that Ansible can take over.</p>
+
+<h3 id="strict-mode">Strict mode</h3>
+
+<p>The first couple lines of Brennan’s script include a bunch of things I don’t really understand. Since part of the goal of this is learning more bash I’m going to dissect them before moving on. The lines in question are:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">SOURCED</span><span class="o">=</span><span class="nb">false</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="s2">"</span><span class="k">${</span><span class="nv">0</span><span class="k">}</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"</span><span class="k">${</span><span class="nv">BASH_SOURCE</span><span class="p">[0]</span><span class="k">}</span><span class="s2">"</span> <span class="o">]</span> <span class="o">||</span> <span class="nv">SOURCED</span><span class="o">=</span><span class="nb">true
+</span><span class="k">if</span> <span class="o">!</span> <span class="nv">$SOURCED</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">set</span> <span class="nt">-eEu</span>
+  <span class="nb">shopt</span> <span class="nt">-s</span> extdebug
+  <span class="nb">trap</span> <span class="s1">'s=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s'</span> ERR
+  <span class="nv">IFS</span><span class="o">=</span><span class="s1">$'</span><span class="se">\n\t</span><span class="s1">'</span>
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>Let’s break this up into tiny chunks. <code class="language-plaintext highlighter-rouge">SOURCED=false</code> is used to set a <a href="https://www.digitalocean.com/community/tutorials/how-to-read-and-set-environmental-and-shell-variables-on-a-linux-vps">shell variable</a> to <code class="language-plaintext highlighter-rouge">false</code>. Next up <code class="language-plaintext highlighter-rouge">&amp;&amp;</code> is a <a href="http://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#Lists">list operator</a> which will only run the next command if the previous one succeeded. So if we set <code class="language-plaintext highlighter-rouge">SOURCED</code> to <code class="language-plaintext highlighter-rouge">false</code> successfully then the next command will be executed.</p>
+
+<p>Putting something inside square brackets means to evaluate the expression inside and return success or failure based on that. You can use it for <code class="language-plaintext highlighter-rouge">if</code> statements, or use it to only execute a subsequent command based on the result of the conditional. Luke Smith has a <a href="https://www.youtube.com/watch?v=p0KKBmfiVl0">good video</a> explaining how to avoid <code class="language-plaintext highlighter-rouge">if</code> statements by writing code like the line we’re evaluating.</p>
+
+<p>So what are we actually evaluating in the square brackets? <a href="https://stackoverflow.com/questions/35006457/choosing-between-0-and-bash-source">This StackOverflow post</a> explains the difference between <code class="language-plaintext highlighter-rouge">${0}</code> and <code class="language-plaintext highlighter-rouge">${BASH_SOURCE[0]}</code>. I’ll outline the difference below with an example script called a few different ways:</p>
+
+<p>I’ve got a script called <code class="language-plaintext highlighter-rouge">experiment.sh</code> which I’ll be running to check out these smaller components of the script</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/usr/bin/env bash</span>
+<span class="nb">echo</span> <span class="s2">"0: [</span><span class="nv">$0</span><span class="s2">] vs bash_source: [</span><span class="k">${</span><span class="nv">BASH_SOURCE</span><span class="p">[0]</span><span class="k">}</span><span class="s2">]"</span>
+</code></pre></div></div>
+
+<p>Here’s the output of running that script a few different ways:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@archiso ~ <span class="c"># bash ./experiment.sh</span>
+0: <span class="o">[</span>./experiment.sh] vs bash_source: <span class="o">[</span>./experiment.sh]
+root@archiso ~ <span class="c"># ./experiment.sh</span>
+0: <span class="o">[</span>./experiment.sh] vs bash_source: <span class="o">[</span>./experiment.sh]
+root@archiso ~ <span class="c"># . ./experiment.sh</span>
+0: <span class="o">[</span>./experiment.sh] vs bash_source: <span class="o">[]</span>
+root@archiso ~ <span class="c"># source ./experiment.sh</span>
+0: <span class="o">[</span>./experiment.sh] vs bash_source: <span class="o">[]</span>
+</code></pre></div></div>
+
+<p>If I execute the script in a subshell, as with the first two examples, then they are equivalent and the expression will evaluate to true. If I <a href="https://linuxize.com/post/bash-source-command/">source</a> the script - that is I tell it to execute the commands in my current shell, then they will not be equivalent.</p>
+
+<p>Back to the script the shell variable name makes sense now and I can put this all together. Set the shell variable <code class="language-plaintext highlighter-rouge">SOURCED</code> to <code class="language-plaintext highlighter-rouge">false</code>, check whether the script is being sourced or not, and if it is, update the <code class="language-plaintext highlighter-rouge">SOURCED</code> shell variable to <code class="language-plaintext highlighter-rouge">true</code> (Since the <code class="language-plaintext highlighter-rouge">||</code> operator says to only execute the subsequent command if the previous did not return true).</p>
+
+<p>Inside this block we have some commands that, as described above, will only run if the script is being run from its own subshell. The first command, <code class="language-plaintext highlighter-rouge">set -eEu</code> uses the <a href="https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html">set builtin</a> to change the value of some shell options. <code class="language-plaintext highlighter-rouge">-e</code> forces the script to exit if almost any command in the script fails (the link provided above for <code class="language-plaintext highlighter-rouge">set</code> includes more details). <code class="language-plaintext highlighter-rouge">-E</code> let’s errors that occur within functions be trapped by the shells they inherit from. That’s confusing because it’s how I’d normally expect error handling to work, not a special case. <a href="https://medium.com/@dirk.avery/the-bash-trap-trap-ce6083f36700">This post</a> explains what’s going on. Finally, <code class="language-plaintext highlighter-rouge">-u</code> treats unset variables and parameters as an error. Again, this is what I’d expect a sane language to do by default. I think the normal behavior is to just return an empty string in bash though. Gross.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">shopt -s extdebug</code>. <a href="https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html">The shopt builtin</a> lets us set additional shell options. The details of <code class="language-plaintext highlighter-rouge">extdebug</code> are in the previous link, but basically it allows better error tracing within function calls.</p>
+
+<p>The next line is a bit of error handling as well. <code class="language-plaintext highlighter-rouge">trap</code> catches certain signals and runs a command in response. The basic syntax is <code class="language-plaintext highlighter-rouge">trap &lt;command to run when caught&gt; &lt;signals to catch&gt;</code>. Looking at <code class="language-plaintext highlighter-rouge">trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND" exit $s' ERR</code> that means if/when an <code class="language-plaintext highlighter-rouge">ERR</code> signal occurs in the script we’ll set the shell variable <code class="language-plaintext highlighter-rouge">s</code> to the exit status of the last task (that’s what <code class="language-plaintext highlighter-rouge">$?</code> is), print the filename of the shell script (<code class="language-plaintext highlighter-rouge">$0</code>), the line number of the error and it’s command, along with its exit status. Because of the options set above there’s no need to explicitly tell the <code class="language-plaintext highlighter-rouge">trap</code> to exit.</p>
+
+<p>The final line in the block changes the <a href="https://bash.cyberciti.biz/guide/$IFS">internal field separator</a> from the default of &lt;space&gt;&lt;tab&gt;&lt;newline&gt; to &lt;newline&gt;&lt;tab&gt;. The link above explains in general what that’s for. We’ll have to get a bit farther along in the script to see why it’s being used here.</p>
+
+<h3 id="text-formatting">Text formatting</h3>
+
+<p>That part was dense. The next few lines are easier:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Text modifiers</span>
+<span class="nv">Bold</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">33[1m"</span>
+<span class="nv">Reset</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">33[0m"</span>
+
+<span class="c"># Colors</span>
+<span class="nv">Red</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">33[31m"</span>
+<span class="nv">Green</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">33[32m"</span>
+<span class="nv">Yellow</span><span class="o">=</span><span class="s2">"</span><span class="se">\0</span><span class="s2">33[33m"</span>
+</code></pre></div></div>
+
+<p>Text enclosed within <code class="language-plaintext highlighter-rouge">$Bold</code> and <code class="language-plaintext highlighter-rouge">$Reset</code> will be bolded. Similarly, enclosing within one of the colours and <code class="language-plaintext highlighter-rouge">$Reset</code> will set the text to that colour.</p>
+
+<h3 id="setup-paths">Setup paths</h3>
+
+<p>The next section sets up a log file:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">WORKING_DIR</span><span class="o">=</span><span class="si">$(</span><span class="nb">pwd</span><span class="si">)</span>
+<span class="nv">LOG</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">WORKING_DIR</span><span class="k">}</span><span class="s2">/arch-install.log"</span>
+<span class="o">[[</span> <span class="nt">-f</span> <span class="k">${</span><span class="nv">LOG</span><span class="k">}</span> <span class="o">]]</span> <span class="o">&amp;&amp;</span> <span class="nb">rm</span> <span class="nt">-f</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="nb">echo</span> <span class="s2">"Start log..."</span> <span class="o">&gt;&gt;</span><span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">pwd</code> stands for “print working directory”. When you enclose a command in <code class="language-plaintext highlighter-rouge">$()</code> it means to take the result of the command. To quickly illustrate, <code class="language-plaintext highlighter-rouge">EXAMPLE=pwd</code> would set <code class="language-plaintext highlighter-rouge">EXAMPLE</code> to “pwd”, whereas <code class="language-plaintext highlighter-rouge">EXAMPLE=$(pwd)</code> would set <code class="language-plaintext highlighter-rouge">EXAMPLE</code> to something like <code class="language-plaintext highlighter-rouge">/root</code>. The first two lines therefor set the <code class="language-plaintext highlighter-rouge">LOG</code> variable to point to a file in the current directory named <code class="language-plaintext highlighter-rouge">arch-install.log</code>.</p>
+
+<p>The next line checks if the logfile exists, and deletes it if it does.</p>
+
+<p>The final line writes “Start log…” into the logfile. <code class="language-plaintext highlighter-rouge">&gt;&gt;</code> redirects the output of the  previous command to the end of the file on the right hand side. Since we know this is a brand new file (because of the line above) this will be the first line of the logfile.</p>
+
+<h3 id="flags-and-variables">Flags and variables</h3>
+
+<p>The next section sets up some system based flags</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">SYS_ARCH</span><span class="o">=</span><span class="si">$(</span><span class="nb">uname</span> <span class="nt">-m</span><span class="si">)</span> <span class="c"># Architecture (x86_64)</span>
+<span class="nv">UEFI</span><span class="o">=</span>0
+<span class="nv">KEYMAP</span><span class="o">=</span><span class="s2">"us"</span>
+<span class="nv">WIFI</span><span class="o">=</span>0
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">uname</code> returns system information, and the <code class="language-plaintext highlighter-rouge">-m</code> flag specifies to return the machine hardware. As the comment above describes this will likely return <code class="language-plaintext highlighter-rouge">x86_64</code>. Later in the script we’ll check if the system is <a href="https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">UEFI</a> or BIOS.</p>
+
+<h3 id="user-provided-variables">User provided variables</h3>
+
+<p>Here we just provide some defaults to variables that the user will set later in the script.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># User provided variables</span>
+<span class="nv">HOST_NAME</span><span class="o">=</span><span class="s2">"computer"</span>
+<span class="nv">KERNEL_VERSION</span><span class="o">=</span><span class="s2">"default"</span>
+<span class="nv">MAIN_DISK</span><span class="o">=</span><span class="s2">"/dev/sda"</span>
+<span class="nv">ROOT_PWD</span><span class="o">=</span><span class="s2">""</span>
+<span class="nv">ANSIBLE_PWD</span><span class="o">=</span><span class="s2">""</span>
+</code></pre></div></div>
+
+<h3 id="common-helper-functions">Common helper functions</h3>
+
+<p>The next section has a series of small functions that will be used throughout the larger script. Let’s see what they do. The first one is:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>print_line<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">printf</span> <span class="s2">"%</span><span class="si">$(</span>tput cols<span class="si">)</span><span class="s2">s</span><span class="se">\n</span><span class="s2">"</span> | <span class="nb">tr</span> <span class="s1">' '</span> <span class="s1">'-'</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The function name gives a pretty solid hint what it does. <code class="language-plaintext highlighter-rouge">printf</code> Allows you to print a combination of strings and variables along with specified formatting for the variables. There’s some good docs <a href="https://www.linuxjournal.com/content/bashs-built-printf-function">here</a>. <code class="language-plaintext highlighter-rouge">tput</code> <a href="http://linuxcommand.org/lc3_adv_tput.php">provides information about the current terminal</a>, in this case <code class="language-plaintext highlighter-rouge">cols</code> says the number of columns that make up a row in the terminal. In my VM <code class="language-plaintext highlighter-rouge">tput cols</code> returns <code class="language-plaintext highlighter-rouge">100</code> so the <code class="language-plaintext highlighter-rouge">printf</code> would resolve to <code class="language-plaintext highlighter-rouge">printf "%100s\n"</code> which means we’ll print spaces across the width of the terminal. <code class="language-plaintext highlighter-rouge">|&amp;</code> means to take the output (both from standard error and standard output, as opposed to just <code class="language-plaintext highlighter-rouge">|</code> which only return standard output) of the previous command and pass it as an input to the following command. <code class="language-plaintext highlighter-rouge">tr</code> in turn replaces the first string with the second, so we turn spaces into dashes, creating a line of dashes across the screen. Finally, that line of dashes is piped to <code class="language-plaintext highlighter-rouge">tee -a</code> which sends its input both to standard output and a file. The <code class="language-plaintext highlighter-rouge">-a</code> flag means to append the output to the file rather than overwriting it. All of that to say this function prints a line of dashes across your screen and into the logfile we defined above.</p>
+
+<p>Next up we have <code class="language-plaintext highlighter-rouge">blank_line</code>, which based on the explanation above is pretty self explanatory.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>blank_line<span class="o">()</span> <span class="o">{</span>
+  <span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">print_title</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>print_title<span class="o">()</span> <span class="o">{</span>
+  clear
+  print_line
+  <span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"# </span><span class="k">${</span><span class="nv">Bold</span><span class="k">}</span><span class="nv">$1</span><span class="k">${</span><span class="nv">Reset</span><span class="k">}</span><span class="s2">"</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+  print_line
+  <span class="nb">echo</span> <span class="s2">""</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">clear</code> clears the screen. Everything else has been explained except <code class="language-plaintext highlighter-rouge">$1</code> which is just the first argument passed to the function. This means calling <code class="language-plaintext highlighter-rouge">print_title "This is the title"</code> would clear the screen, print a line of dashes to the screen and log file, print <code class="language-plaintext highlighter-rouge">This is the title</code> to the screen and log file, another line, and then start at the beginning of a new line for whatever text follows.</p>
+
+<p>After that is <code class="language-plaintext highlighter-rouge">print_title_info</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>print_title_info<span class="o">()</span> <span class="o">{</span>
+  <span class="nv">T_COLS</span><span class="o">=</span><span class="si">$(</span>tput cols<span class="si">)</span>
+  <span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"</span><span class="k">${</span><span class="nv">Bold</span><span class="k">}</span><span class="nv">$1</span><span class="k">${</span><span class="nv">Reset</span><span class="k">}</span><span class="se">\n</span><span class="s2">"</span> | <span class="nb">fold</span> <span class="nt">-sw</span> <span class="k">$((</span>T_COLS <span class="o">-</span> <span class="m">18</span><span class="k">))</span> | <span class="nb">sed</span> <span class="s1">'s/^/\t/'</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">echo</code> just prints some text, the <code class="language-plaintext highlighter-rouge">-e</code> flag tells it to interpret escaped characters, so <code class="language-plaintext highlighter-rouge">\t</code> will show a tab rather than the literal <code class="language-plaintext highlighter-rouge">\t</code>. That gets piped to <a href="https://ss64.com/bash/fold.html">fold</a>, which wraps the text at 18 characters less than the width of the terminal. <code class="language-plaintext highlighter-rouge">-s</code> tells it to wrap at the last whitespace before the column limit (so don’t wrap in the middle of a word) and <code class="language-plaintext highlighter-rouge">w</code> is how you specify the column width to wrap on. After that we pipe the output to <a href="https://www.digitalocean.com/community/tutorials/the-basics-of-using-the-sed-stream-editor-to-manipulate-text-in-linux">sed</a> which I frankly find intimidating. This one’s not so bad though. <code class="language-plaintext highlighter-rouge">'s/&lt;pattern&gt;/&lt;other pattern&gt;/'</code> just performs a find replace of <code class="language-plaintext highlighter-rouge">&lt;pattern&gt;</code> for <code class="language-plaintext highlighter-rouge">&lt;other pattern&gt;</code> in each line of text that’s passed in. The patterns can be regular expressions, which I also find intimidating to work with, but this one is just saying to replace the beginning of the line (that’s what <code class="language-plaintext highlighter-rouge">^</code>) means with a tab. Not so terrible.</p>
+
+<p>The next several functions repeat the general concepts above, just with different formatting (red font for errors for example) so I won’t reproduce them here.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">pause_function</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pause_function<span class="o">()</span> <span class="o">{</span>
+  print_line
+  <span class="nb">read</span> <span class="nt">-re</span> <span class="nt">-sn</span> 1 <span class="nt">-p</span> <span class="s2">"Press enter to continue..."</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In the original code the <code class="language-plaintext highlighter-rouge">read</code> line was in an <code class="language-plaintext highlighter-rouge">if</code> block that was based on a variable that wasn’t set anywhere in the script. I assume that was planned to build fully unattended builds eventually, but I took it out for now at least. <code class="language-plaintext highlighter-rouge">read</code> receives input from the user. <code class="language-plaintext highlighter-rouge">-re</code> specifies not to allow backslashes to escape characters and to use <code class="language-plaintext highlighter-rouge">Readline</code> to obtain the line in an interactive shell. <code class="language-plaintext highlighter-rouge">-s</code> tells read not to echo input to the terminal, <code class="language-plaintext highlighter-rouge">n 1</code> tells it how many characters of input to wait for. <code class="language-plaintext highlighter-rouge">-p</code> tells it what text to prompt with.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">arch-chroot</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arch_chroot<span class="o">()</span> <span class="o">{</span>
+  arch-chroot /mnt /bin/bash <span class="nt">-c</span> <span class="s2">"</span><span class="k">${</span><span class="nv">1</span><span class="k">}</span><span class="s2">"</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This is cool, when I’ve tried to build my own version of this in the past I broke things up into a pre and post <a href="https://wiki.archlinux.org/index.php/Chroot">chroot</a> because I couldn’t figure out how to get my script to change contexts. This one does it by just sending the commands one at a time into the chrooted environment. Neat!</p>
+
+<p>The final helper is <code class="language-plaintext highlighter-rouge">is_package_installed</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>is_package_installed<span class="o">()</span> <span class="o">{</span>
+  <span class="c">#check if a package is already installed</span>
+  <span class="k">for </span>PKG <span class="k">in</span> <span class="nv">$1</span><span class="p">;</span> <span class="k">do
+    </span>pacman <span class="nt">-Q</span> <span class="s2">"</span><span class="nv">$PKG</span><span class="s2">"</span> &amp;&gt;/dev/null <span class="o">&amp;&amp;</span> <span class="k">return </span>0
+  <span class="k">done
+  return </span>1
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">pacman -Q</code> searches for a package matching the subsequent argument. If it finds it it will return its full name and version. If it can’t it will return an error. So this function will return 0 if any packages are found, and 1 if none of them are.</p>
+
+<h3 id="verification-functions">Verification functions</h3>
+
+<p>These are also helper functions, but they’re specifically designed to make sure the script is being run from the correct environment.</p>
+
+<p>First up is <code class="language-plaintext highlighter-rouge">check_root</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check_root<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Checking root permissions..."</span>
+
+  <span class="k">if</span> <span class="o">[[</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">id</span> <span class="nt">-u</span><span class="si">)</span><span class="s2">"</span> <span class="o">!=</span> <span class="s2">"0"</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span>error_msg <span class="s2">"ERROR! You must execute the script as the 'root' user."</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">id -u</code> returns the user id. Since Root is always user 0 on a system we know this isn’t being run as root and the script will fail.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">check_archlinux</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check_archlinux<span class="o">()</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">[[</span> <span class="o">!</span> <span class="nt">-e</span> /etc/arch-release <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span>error_msg <span class="s2">"ERROR! You must execute the script on Arch Linux."</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">-e &lt;file&gt;</code> checks if a file exists, so if <code class="language-plaintext highlighter-rouge">/etc/arch-release</code> does not exist (it’s an empty file on the USB boot system) then we’re not on Arch and had better exit.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">check_boot_system</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check_boot_system<span class="o">()</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">[[</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">cat</span> /sys/class/dmi/id/sys_vendor<span class="si">)</span><span class="s2">"</span> <span class="o">==</span> <span class="s1">'Apple Inc.'</span> <span class="o">]]</span> <span class="o">||</span> <span class="o">[[</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">cat</span> /sys/class/dmi/id/sys_vendor<span class="si">)</span><span class="s2">"</span> <span class="o">==</span> <span class="s1">'Apple Computer, Inc.'</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span>modprobe <span class="nt">-r</span> <span class="nt">-q</span> efivars <span class="o">||</span> <span class="nb">true</span> <span class="c"># if MAC</span>
+  <span class="k">else
+    </span>modprobe <span class="nt">-q</span> efivarfs <span class="c"># all others</span>
+  <span class="k">fi
+
+  if</span> <span class="o">[[</span> <span class="nt">-d</span> <span class="s2">"/sys/firmware/efi/"</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="c">## Mount efivarfs if it is not already mounted</span>
+    <span class="c"># shellcheck disable=SC2143</span>
+    <span class="k">if</span> <span class="o">[[</span> <span class="nt">-z</span> <span class="si">$(</span>mount | <span class="nb">grep</span> /sys/firmware/efi/efivars<span class="si">)</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+      </span>mount <span class="nt">-t</span> efivarfs efivarfs /sys/firmware/efi/efivars
+    <span class="k">fi
+    </span><span class="nv">UEFI</span><span class="o">=</span>1
+  <span class="k">else
+    </span><span class="nv">UEFI</span><span class="o">=</span>0
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The purpose of this section is to <a href="https://wiki.archlinux.org/index.php/installation_guide#Verify_the_boot_mode">verify the boot mode</a>. Pretty much any system I can imagine installing on these days will be UEFI, but it doesn’t hurt to check. I’m not totally sure what the first little bit is doing, and I don’t have a mac to test. The <code class="language-plaintext highlighter-rouge">-r</code> flag is to remove a module from the kernel, rather than add it like the normal command. <code class="language-plaintext highlighter-rouge">modprobe -q efivarfs</code> will add the <code class="language-plaintext highlighter-rouge">efivarfs</code> module to the kernel, and fail quietly if it can’t find that module (that’s the <code class="language-plaintext highlighter-rouge">-q</code> flag). As described in the install guide, if you have a <code class="language-plaintext highlighter-rouge">/sys/firmware/efi/</code> directory, which is what the first block of the second if statement is checking, then your system is EFI. The next part describes what it’s going to do (mount efivarfs if it’s not already mounted), but let’s dig into how it does that. <code class="language-plaintext highlighter-rouge">-z</code> returns true if the length of an evaluated string is zero. <code class="language-plaintext highlighter-rouge">mount</code> without any arguments returns all mountpoints in the system. We pipe that into <code class="language-plaintext highlighter-rouge">grep</code> which will return <code class="language-plaintext highlighter-rouge">/sys/firmwar/efi/efivars</code> if it’s mounted and an empty string if not, which accomplishes the goal. The last part of the script sets the variable UEFI to identify if the system is EFI or BIOS.</p>
+
+<p>Next up is <code class="language-plaintext highlighter-rouge">check_wifi</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check_wifi<span class="o">()</span> <span class="o">{</span>
+  <span class="nv">has_wifi</span><span class="o">=(</span><span class="si">$(</span><span class="nb">ls</span> /sys/class/net | <span class="nb">grep </span>wlan<span class="si">)</span><span class="o">)</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$has_wifi</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nv">WIFI</span><span class="o">=</span>1
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>As per the <a href="https://wiki.archlinux.org/index.php/Network_configuration#Listing_network_interfaces">Arch Wikie</a> <code class="language-plaintext highlighter-rouge">/sys/class/net</code> lists all network devices. So if I list that directory and match on <code class="language-plaintext highlighter-rouge">wlan</code> then I know there’s a wireless device. I’ll use this to determine whether or not to install wireless tools when loading software.</p>
+
+<h3 id="prompts--user-interaction">Prompts / User interaction</h3>
+
+<p>The first prompt asks for a hostname for the system. It had some code for auto naming that I trimmed out. The rest of it is pretty self explanatory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ask_for_hostname<span class="o">()</span> <span class="o">{</span>
+  print_title <span class="s2">"Hostname"</span>
+  print_title_info <span class="s2">"Pick a hostname for this machine.  Press enter to have a random hostname selected."</span>
+  <span class="nb">read</span> <span class="nt">-rp</span> <span class="s2">"Hostname [ex: archlinux]: "</span> HOST_NAME
+  <span class="k">if</span> <span class="o">[[</span> <span class="nv">$HOST_NAME</span> <span class="o">==</span> <span class="s2">""</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nv">HOST_NAME</span><span class="o">=</span><span class="s2">"arch-</span><span class="k">$((</span><span class="m">1</span> <span class="o">+</span> RANDOM <span class="o">%</span> <span class="m">1000</span><span class="k">))</span><span class="s2">.tts.lan"</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">read</code> command takes inputs, the <code class="language-plaintext highlighter-rouge">-r</code> flag prevents special characters from being included, and <code class="language-plaintext highlighter-rouge">-p</code> displays the text that follows as a prompt without a newline before taking the input.</p>
+
+<p>The last block says if the input is empty to give a hostname like <code class="language-plaintext highlighter-rouge">arch-[random number 1-1000].tts.lan</code>.</p>
+
+<p>Next up we’re determine which hard disk to install on. Note that this isn’t handling partitioning or anything yet.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ask_for_main_disk<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Determining main disk..."</span>
+  <span class="nv">devices_list</span><span class="o">=(</span><span class="si">$(</span>lsblk <span class="nt">--nodeps</span> <span class="nt">--noheading</span> <span class="nt">--list</span> <span class="nt">--exclude</span> 1,11,7 | <span class="nb">awk</span> <span class="s1">'{print "/dev/" $1}'</span><span class="si">)</span><span class="o">)</span>
+
+  <span class="k">if</span> <span class="o">[[</span> <span class="k">${#</span><span class="nv">devices_list</span><span class="p">[@]</span><span class="k">}</span> <span class="o">==</span> 1 <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nv">device</span><span class="o">=</span><span class="k">${</span><span class="nv">devices_list</span><span class="p">[0]</span><span class="k">}</span>
+  <span class="k">else
+    </span>print_title <span class="s2">"Main Disk Selection"</span>
+    print_title_info <span class="s2">"Select which disk to use for the main installation (where root and boot will go)."</span>
+    lsblk <span class="nt">--nodeps</span> <span class="nt">--list</span> <span class="nt">--exclude</span> 1,11,7 <span class="nt">--output</span> <span class="s2">"name,size,type"</span>
+    blank_line
+    <span class="nv">PS3</span><span class="o">=</span><span class="s2">"Enter your option: "</span>
+    <span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"Select main drive:</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="k">select </span>device <span class="k">in</span> <span class="s2">"</span><span class="k">${</span><span class="nv">devices_list</span><span class="p">[@]</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">do
+      if </span>contains_element <span class="s2">"</span><span class="k">${</span><span class="nv">device</span><span class="k">}</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">devices_list</span><span class="p">[@]</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">then
+        </span><span class="nb">break
+      </span><span class="k">else
+        </span>invalid_option
+      <span class="k">fi
+    done
+  fi
+  </span><span class="nv">MAIN_DISK</span><span class="o">=</span><span class="nv">$device</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The first line calls <a href="https://man7.org/linux/man-pages/man8/lsblk.8.html">lsblk</a> to list all available block devices. <code class="language-plaintext highlighter-rouge">--nodeps</code> tells it not to show holder devices, so for example if I have an <code class="language-plaintext highlighter-rouge">sda</code> device with two partitions - <code class="language-plaintext highlighter-rouge">sda1</code> and <code class="language-plaintext highlighter-rouge">sda2</code> it will only show <code class="language-plaintext highlighter-rouge">sda</code>, which is what we want since we’re just picking the disk itself at this stage. <code class="language-plaintext highlighter-rouge">--noheading</code> drops column headers, which we want since we’re just going to parse this list. <code class="language-plaintext highlighter-rouge">--list</code> produces the output as a list, which we want in order to make a list of potential disks to select. <code class="language-plaintext highlighter-rouge">--exclude 1,11,17</code> tells it not to list RAM or optical drive devices. The output of that list is piped into <code class="language-plaintext highlighter-rouge">awk</code> so that <code class="language-plaintext highlighter-rouge">/dev/</code> can be prepended to it.</p>
+
+<p>The next line says that if the array has only one entry (there’s only one disk available) then we just use that device. If we have more than one device the script prints out a list of them using the same command used to build the list of available disks but showing column headers and including some details to help select the correct disk.</p>
+
+<p><code class="language-plaintext highlighter-rouge">PS3</code> sets the prompt used by the select command. The select statement has you pick a device and loops if you haven’t selected one of the options in the list until you do. Finally we set <code class="language-plaintext highlighter-rouge">MAIN_DISK</code> to the device we want to install on.</p>
+
+<p>The original script has some similar functions to pick a second disk, but I’m not going to be using that option so I’m omitting it.</p>
+
+<p>There are a few other selection scripts (to set a root password and kernel version for example), but there’s nothing new in terms of BASH in them so I’ll omit them from this post.</p>
+
+<h3 id="installationconfiguration-options">Installation/configuration options</h3>
+
+<p>Now we get to functions that actually help with the installation and configuration of the system.</p>
+
+<p>First is <code class="language-plaintext highlighter-rouge">configure_mirrorlist</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>configure_mirrorlist<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Configuring repository mirrorlist"</span>
+
+  pacman <span class="nt">-Syy</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  <span class="c"># Install reflector</span>
+  pacman <span class="nt">-S</span> <span class="nt">--noconfirm</span> reflector |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  print_status <span class="s2">"    Backing up the original mirrorlist..."</span>
+  <span class="nb">rm</span> <span class="nt">-f</span> <span class="s2">"/etc/pacman.d/mirrorlist.orig"</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+  <span class="nb">mv</span> <span class="nt">-i</span> <span class="s2">"/etc/pacman.d/mirrorlist"</span> <span class="s2">"/etc/pacman.d/mirrorlist.orig"</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  print_status <span class="s2">"    Rotating the new list into place..."</span>
+  <span class="c"># Run reflector</span>
+  /usr/bin/reflector <span class="nt">--score</span> 100 <span class="nt">--fastest</span> 20 <span class="nt">--age</span> 12 <span class="nt">--sort</span> rate <span class="nt">--protocol</span> https <span class="nt">--save</span> /etc/pacman.d/mirrorlist |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  <span class="c"># Allow global read access (required for non-root yaourt execution)</span>
+  <span class="nb">chmod</span> +r /etc/pacman.d/mirrorlist |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  <span class="c"># Update one more time</span>
+  pacman <span class="nt">-Syy</span> |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">pacman -Syy</code> says to sync all available packages from the master repository. The <code class="language-plaintext highlighter-rouge">-S</code> flag is for sync, and <code class="language-plaintext highlighter-rouge">yy</code> forces a refresh even if the list appears to be up to date.</p>
+
+<p>Next the script installs <a href="https://wiki.archlinux.org/index.php/Reflector">reflector</a> in order to update and optimize the list of mirrors that will be used for downloading packages.</p>
+
+<p>The rest of the script is pretty well commented and straightforward.</p>
+
+<h4 id="partitioning">Partitioning</h4>
+
+<p>The script I’m templating off of is designed to wipe an entire disk. I generally dual boot Windows so I definitely don’t want that option. In light of that I had to tweak this section a fair bit. Rather than wiping the whole disk and creating new partitions like the template script, I want to identify an existing boot and linux partition and install to them. See the TLDR section for setting up a fresh disk. If you’ve already installed Arch on the disk you’re targeting you should also clear out the partition with the LVMs on it and start with a blank slate. That’s not done by the script, check the TLDR section for how to manage that.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>find_install_partition<span class="o">()</span> <span class="o">{</span>
+  print_title <span class="s2">"Installation partition selection"</span>
+  print_title_info <span class="s2">"Select the partition to install Arch. This should be an already existing boot partition. If you don't see what you expect here STOP and run cfdisk or something to figure it out."</span>
+  <span class="nv">partition_list</span><span class="o">=(</span><span class="si">$(</span>lsblk <span class="nv">$MAIN_DISK</span> <span class="nt">--noheading</span> <span class="nt">--list</span> <span class="nt">--output</span> NAME | <span class="nb">awk</span> <span class="s1">'{print "/dev/" $1}'</span> | <span class="nb">grep</span> <span class="s2">"[0-9]$"</span><span class="si">)</span><span class="o">)</span>
+  blank_line
+  <span class="nv">PS3</span><span class="o">=</span><span class="s2">"Enter your option"</span>:
+  lsblk <span class="nv">$MAIN_DISK</span> <span class="nt">--output</span> NAME,FSTYPE,LABEL,SIZE
+  <span class="nb">echo</span> <span class="nt">-e</span> <span class="s2">"select a partition"</span>
+  <span class="k">select </span>partition <span class="k">in</span> <span class="s2">"</span><span class="k">${</span><span class="nv">partition_list</span><span class="p">[@]</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">do
+    if </span>contains_element <span class="s2">"</span><span class="nv">$partition</span><span class="s2">"</span> <span class="s2">"</span><span class="k">${</span><span class="nv">partition_list</span><span class="p">[@]</span><span class="k">}</span><span class="s2">"</span><span class="p">;</span> <span class="k">then
+      </span><span class="nb">break
+    </span><span class="k">else
+      </span>invalid_option
+    <span class="k">fi
+  done
+  </span><span class="nv">INSTALL_PARTITION</span><span class="o">=</span><span class="nv">$partition</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This works similarly to the main disk selection, except I formatted the output slightly differently. The one completely new command I added was the last <code class="language-plaintext highlighter-rouge">| grep "[0-9]$"</code>. That filters the output to only show entries that end with a number (<code class="language-plaintext highlighter-rouge">$</code> means end of line). I couldn’t figure out a way to have lsblk not list the block device (the opposite of what we wanted in the main disk selection) so I filter it out. As an example if I have a disk <code class="language-plaintext highlighter-rouge">/dev/sda</code> with partitions <code class="language-plaintext highlighter-rouge">sda1, sda2, sda3</code> before the grep I’d get:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/dev/sda
+/dev/sda1
+/dev/sda2
+/dev/sda3
+</code></pre></div></div>
+
+<p>I really don’t want to accidentally try and make a partition on the whole device, so I filter that out so the list is just:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/dev/sda1
+/dev/sda2
+/dev/sda3
+</code></pre></div></div>
+
+<p>There’s a practically identical function called <code class="language-plaintext highlighter-rouge">find_boot_partition</code> that does the same thing but identifies the boot partition for installation.</p>
+
+<p>The next step is to create a physical and logical volume for the operating system using <a href="https://wiki.archlinux.org/index.php/LVM">LVM</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setup_lvm<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Setting up LVM"</span>
+
+  pvcreate <span class="nv">$INSTALL_PARTITION</span>
+  vgcreate <span class="s2">"vg_main"</span> <span class="nv">$INSTALL_PARTITION</span>
+
+  lvcreate <span class="nt">-l</span> 5%VG <span class="s2">"vg_main"</span> <span class="nt">-n</span> lv_var
+  lvcreate <span class="nt">-l</span> 45%VG <span class="s2">"vg_main"</span> <span class="nt">-n</span> lv_root
+  lvcreate <span class="nt">-l</span> 40%VG <span class="s2">"vg_main"</span> <span class="nt">-n</span> lv_home
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This one’s actually pretty readable. We create a physical volume on the install partition identified in the previous section, create a virtual group on it, and then create logical volumes within that.</p>
+
+<p>Next we format and mount the partitions:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>format_partitions<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Formatting partitions"</span>
+
+  mkfs.ext4 <span class="s2">"/dev/mapper/vg_main-lv_var"</span>
+  mkfs.ext4 <span class="s2">"/dev/mapper/vg_main-lv_root"</span>
+  mkfs.ext4 <span class="s2">"/dev/mapper/vg_main-lv_home"</span>
+<span class="o">}</span>
+
+mount_partitions<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Mounting partitions"</span>
+
+  <span class="c"># First load the root</span>
+  mount <span class="nt">-t</span> ext4 <span class="nt">-o</span> defaults,rw,relatime,errors<span class="o">=</span>remount-ro /dev/mapper/vg_main-lv_root /mnt
+
+  <span class="c"># Create the paths for the other mounts</span>
+  <span class="nb">mkdir</span> <span class="nt">-p</span> <span class="s2">"/mnt/boot/efi"</span>
+  <span class="nb">mkdir</span> <span class="nt">-p</span> <span class="s2">"/mnt/var"</span>
+  <span class="nb">mkdir</span> <span class="nt">-p</span> <span class="s2">"/mnt/home"</span>
+
+  <span class="k">if</span> <span class="o">[[</span> <span class="nv">$UEFI</span> <span class="o">==</span> 1 <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span>mount <span class="nt">-t</span> vfat <span class="nt">-o</span> defaults,rw,noatime,utf8,errors<span class="o">=</span>remount-ro <span class="s2">"</span><span class="k">${</span><span class="nv">MAIN_DISK</span><span class="k">}</span><span class="s2">1"</span> <span class="s2">"/mnt/boot/efi"</span>
+  <span class="k">fi</span>
+
+  <span class="c"># Mount others</span>
+  mount <span class="nt">-t</span> ext4 <span class="nt">-o</span> defaults,rw,noatime /dev/mapper/vg_main-lv_var /mnt/var
+  mount <span class="nt">-t</span> ext4 <span class="nt">-o</span> defaults,rw,noatime /dev/mapper/vg_main-lv_home /mnt/home
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Again, most of this is pretty readable. The one that I didn’t know about was the <code class="language-plaintext highlighter-rouge">noatime</code> option. In the original script it was set to <code class="language-plaintext highlighter-rouge">relatime</code>, but after reading <a href="https://blog.confirm.ch/mount-options-atime-vs-relatime/">this post</a> it seems like I want <code class="language-plaintext highlighter-rouge">noatime</code> to improve the life of my SSD.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">install_base_system</code> function doesn’t really introduce any new bash stuff, which was my main goal in writing out how this all worked line by line. I’ll present it below without further comment.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>install_base_system<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Installing base system"</span>
+
+  pacman <span class="nt">-S</span> <span class="nt">--noconfirm</span> archlinux-keyring |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+
+  <span class="c"># Install kernel</span>
+  <span class="k">case</span> <span class="s2">"</span><span class="nv">$KERNEL_VERSION</span><span class="s2">"</span> <span class="k">in</span>
+  <span class="s2">"lts"</span><span class="p">)</span>
+    pacstrap /mnt base base-devel linux-lts linux-lts-headers linux-firmware |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+    <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above."</span>
+    <span class="p">;;</span>
+  <span class="s2">"hard"</span><span class="p">)</span>
+    pacstrap /mnt base base-devel linux-hardened linux-hardened-headers linux-firmware |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+    <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above."</span>
+    <span class="p">;;</span>
+  <span class="k">*</span><span class="p">)</span>
+    pacstrap /mnt base base-devel linux linux-headers linux-firmware |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+    <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above."</span>
+    <span class="p">;;</span>
+  <span class="k">esac</span>
+
+  <span class="c"># Install file system tools</span>
+  pacstrap /mnt lvm2 dosfstools mtools gptfdisk |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+  <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above. Part 4."</span>
+
+  <span class="c"># Install networking tools</span>
+  pacstrap /mnt dialog networkmanager networkmanager-openvpn |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+  <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above. Part 5."</span>
+  
+  <span class="k">if</span> <span class="o">[[</span> <span class="nv">$WIFI</span> <span class="o">==</span> 1 <span class="o">]]</span><span class="p">;</span> <span class="k">then
+    </span>pacstrap /mnt iwd |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+    <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above. Wifi"</span>
+  <span class="k">fi</span>
+
+  <span class="c"># Remaining misc tools</span>
+  pacstrap /mnt reflector git gvim openssh ansible terminus-font systemd-swap |&amp; <span class="nb">tee</span> <span class="nt">-a</span> <span class="s2">"</span><span class="k">${</span><span class="nv">LOG</span><span class="k">}</span><span class="s2">"</span>
+  <span class="o">[[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]]</span> <span class="o">&amp;&amp;</span> error_msg <span class="s2">"Installing base system to /mnt failed. Check error messages above. Part 6."</span>
+
+  <span class="c"># Add the ssh group</span>
+  arch_chroot <span class="s2">"groupadd ssh"</span>
+
+  <span class="c"># Set the NetworkManager &amp; ssh services to be enabled</span>
+  arch_chroot <span class="s2">"systemctl enable NetworkManager.service"</span>
+  arch_chroot <span class="s2">"systemctl enable wpa_supplicant.service"</span>
+  arch_chroot <span class="s2">"systemctl enable sshd.service"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Next up we have some user account setup and configuration for ansible, which will be used for the rest of the configuration of the machine. The original script added some public keys to the ansible user’s authorized keys file. I’d like to add some automation to handle <a href="http://blog.ianpreston.ca/2020/05/03/ssh.html">my key management approach</a> but the VM I’m working in makes USB passthrough a hassle. (I switched to Hyper-V part way through making this guide as Virtualbox and WSL2 were fighting on my machine).</p>
+
+<p>There’s a script for updating the root user account, but it has a subset of what’s in the ansible account, so let’s just look at that one:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setup_ansible_account<span class="o">()</span> <span class="o">{</span>
+  print_info <span class="s2">"Setting up Ansible account"</span>
+
+  arch_chroot <span class="s2">"useradd -m -G wheel -s /bin/bash ansible"</span>
+
+  arch_chroot <span class="s2">"echo -n 'ansible:</span><span class="nv">$ANSIBLE_PWD</span><span class="s2">' | chpasswd -c SHA512"</span>
+
+  arch_chroot <span class="s2">"chfn ansible -f Ansible"</span>
+
+  <span class="nb">mkdir</span> <span class="nt">-p</span> /mnt/home/ansible/.ssh
+  <span class="nb">chmod </span>0700 /mnt/home/ansible/.ssh
+  arch_chroot <span class="s2">"chown -R ansible:ansible /home/ansible/.ssh"</span>
+
+  <span class="c"># Add user to the ssh</span>
+  arch_chroot <span class="s2">"usermod -a -G ssh ansible"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">useradd</code> does about what you’d expect. <code class="language-plaintext highlighter-rouge">-m</code> creates a home directory for that user if it doesn’t exist. <code class="language-plaintext highlighter-rouge">-G</code> is followed by a list of groups you want the user to be a part of. In this case we want ansible to be part of <a href="https://en.wikipedia.org/wiki/Wheel_(computing)">wheel</a> so it can perform actions with elevated privileges. <code class="language-plaintext highlighter-rouge">chpasswd</code> is a pretty cool way to set a user password from a script without user interaction, <a href="https://linux.die.net/man/8/chpasswd">man pages here</a>. <code class="language-plaintext highlighter-rouge">chfn</code> is used to change user info, in this case to give the ansible user the first name Ansible.</p>
+
+<h2 id="conclusion-and-next-steps">Conclusion and next steps</h2>
+
+<p>After running this script you have a bare bones Arch install. The next step is to create users and install all the software and configurations you need to get a functioning system. This post is already getting really long so I’m going to break that part up into a future post.</p>

@@ -1,0 +1,747 @@
+<h1 id="python-packaging">Python packaging</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#python-packaging" id="markdown-toc-python-packaging">Python packaging</a>    <ol>
+      <li><a href="#intro" id="markdown-toc-intro">Intro</a>        <ol>
+          <li><a href="#background" id="markdown-toc-background">Background</a></li>
+          <li><a href="#my-current-packaging-approach" id="markdown-toc-my-current-packaging-approach">My current packaging approach</a></li>
+          <li><a href="#the-problem" id="markdown-toc-the-problem">The problem</a></li>
+          <li><a href="#what-im-hoping-to-do-here" id="markdown-toc-what-im-hoping-to-do-here">What I’m hoping to do here</a></li>
+          <li><a href="#how-this-will-progress" id="markdown-toc-how-this-will-progress">How this will progress</a></li>
+        </ol>
+      </li>
+      <li><a href="#the-process" id="markdown-toc-the-process">The process</a>        <ol>
+          <li><a href="#preliminary-setup" id="markdown-toc-preliminary-setup">Preliminary setup</a>            <ol>
+              <li><a href="#create-repository" id="markdown-toc-create-repository">Create repository</a></li>
+              <li><a href="#set-up-environment" id="markdown-toc-set-up-environment">Set up environment</a></li>
+              <li><a href="#make-my-super-sweet-library" id="markdown-toc-make-my-super-sweet-library">Make my super sweet library</a></li>
+            </ol>
+          </li>
+          <li><a href="#run-into-problems" id="markdown-toc-run-into-problems">Run into problems</a></li>
+          <li><a href="#some-bad-ways-to-solve-the-problem" id="markdown-toc-some-bad-ways-to-solve-the-problem">Some bad ways to solve the problem</a>            <ol>
+              <li><a href="#just-copy-the-file-everywhere" id="markdown-toc-just-copy-the-file-everywhere">Just copy the file everywhere</a></li>
+              <li><a href="#add-it-to-the-path" id="markdown-toc-add-it-to-the-path">Add it to the path</a></li>
+            </ol>
+          </li>
+          <li><a href="#get-hypermodern" id="markdown-toc-get-hypermodern">Get hypermodern</a></li>
+          <li><a href="#turn-our-code-into-a-poetry-package" id="markdown-toc-turn-our-code-into-a-poetry-package">Turn our code into a poetry package</a>            <ol>
+              <li><a href="#poetry-init" id="markdown-toc-poetry-init">Poetry init</a></li>
+              <li><a href="#src-layout" id="markdown-toc-src-layout">src layout</a></li>
+              <li><a href="#poetry-install" id="markdown-toc-poetry-install">poetry install</a></li>
+              <li><a href="#poetry-build" id="markdown-toc-poetry-build">poetry build</a>                <ol>
+                  <li><a href="#test-the-build" id="markdown-toc-test-the-build">test the build</a></li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li><a href="#automate-testing" id="markdown-toc-automate-testing">Automate testing</a>            <ol>
+              <li><a href="#add-a-pytest-dependency" id="markdown-toc-add-a-pytest-dependency">Add a pytest dependency</a></li>
+              <li><a href="#write-tests" id="markdown-toc-write-tests">Write tests</a></li>
+            </ol>
+          </li>
+          <li><a href="#publish-to-pypi" id="markdown-toc-publish-to-pypi">Publish to pypi</a>            <ol>
+              <li><a href="#set-up-for-publishing" id="markdown-toc-set-up-for-publishing">Set up for publishing</a></li>
+              <li><a href="#publish" id="markdown-toc-publish">Publish</a></li>
+              <li><a href="#pull-it-back-down-and-test" id="markdown-toc-pull-it-back-down-and-test">Pull it back down and test</a></li>
+            </ol>
+          </li>
+          <li><a href="#publish-to-a-private-repository" id="markdown-toc-publish-to-a-private-repository">Publish to a private repository</a></li>
+          <li><a href="#adding-dependencies" id="markdown-toc-adding-dependencies">Adding dependencies</a></li>
+          <li><a href="#now-do-conda" id="markdown-toc-now-do-conda">Now do conda</a>            <ol>
+              <li><a href="#sort-of-working-build" id="markdown-toc-sort-of-working-build">Sort of working build</a>                <ol>
+                  <li><a href="#issues-with-this-build" id="markdown-toc-issues-with-this-build">Issues with this build</a></li>
+                  <li><a href="#fixing-the-issues" id="markdown-toc-fixing-the-issues">Fixing the issues</a>                    <ol>
+                      <li><a href="#adding-a-makefile" id="markdown-toc-adding-a-makefile">Adding a Makefile</a></li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li><a href="#publish-to-a-public-channel" id="markdown-toc-publish-to-a-public-channel">Publish to a public channel</a></li>
+              <li><a href="#publish-to-a-private-channel" id="markdown-toc-publish-to-a-private-channel">Publish to a private channel</a></li>
+            </ol>
+          </li>
+          <li><a href="#put-it-all-together" id="markdown-toc-put-it-all-together">Put it all together</a>            <ol>
+              <li><a href="#clean-slate" id="markdown-toc-clean-slate">Clean slate</a></li>
+              <li><a href="#full-build-chain" id="markdown-toc-full-build-chain">Full build chain</a></li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li><a href="#conclusion-and-next-steps" id="markdown-toc-conclusion-and-next-steps">Conclusion and next steps.</a></li>
+      <li><a href="#resources-ive-consulted" id="markdown-toc-resources-ive-consulted">Resources I’ve consulted</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="intro">Intro</h2>
+
+<p>Probably the best way to introduce this post is to explain a bit of my background, and then describe the problem I’m trying to solve.</p>
+
+<h3 id="background">Background</h3>
+
+<p>I have been using python for data analysis work since about 2017, so around 3 years at the time of writing this post. I work on a small team, and so it’s necessary for us to be able to share code for things like implementing business logic, or connecting to internal data sources. I also maintain an open source package called <a href="https://github.com/ianepreston/stats_can">stats_can</a> that can be used to access Statistics Canada datasets in python.</p>
+
+<h3 id="my-current-packaging-approach">My current packaging approach</h3>
+
+<p>The current way my team shares code is by having a repository with a <code class="language-plaintext highlighter-rouge">lib</code> folder in it, and adding that folder to the <code class="language-plaintext highlighter-rouge">PYTHONPATH</code> environment variable in Windows.</p>
+
+<p>The current way I build new versions of <code class="language-plaintext highlighter-rouge">stats_can</code> is through a <a href="https://en.wikipedia.org/wiki/Cargo_cult">cargo cult</a> sequence of steps that I kind of sort of understand.</p>
+
+<h3 id="the-problem">The problem</h3>
+
+<p>For the shared team library all of our stuff is basically in one giant package, broken up into subpackages. This leads to all sorts of problems:</p>
+
+<ul>
+  <li>It’s very difficult to write tests for it.</li>
+  <li>There’s no version numbering so it’s impossible to pin code at a particular version.</li>
+  <li>We can’t share it easily with other teams, and we really can’t share just one particular subpackage of it with other teams.</li>
+  <li>The whole thing just feels very wrong to me. I knew it wasn’t the way to go when I set it up, but I was very new to python and just didn’t have the experience/capacity to find a better way and it worked for the time being.</li>
+</ul>
+
+<p>For stats_can my current system more or less works, it just has two problems:</p>
+
+<ul>
+  <li>I only build conda packages. I’d like to allow <code class="language-plaintext highlighter-rouge">pip</code> users to access it but…</li>
+  <li>Like I said, the build process is a bit of a house of cards that I barely understand, so adding in another build steps scares me.</li>
+</ul>
+
+<p>Both of the examples described above are for libraries. I’ve built a couple of small apps, but have even less of an idea the correct way to build/deploy them.</p>
+
+<h3 id="what-im-hoping-to-do-here">What I’m hoping to do here</h3>
+
+<p>Basically I want to figure out the current best practice way to do the following:</p>
+
+<ul>
+  <li>build a library package with versions that can be installed with <code class="language-plaintext highlighter-rouge">pip</code> and <code class="language-plaintext highlighter-rouge">conda</code></li>
+  <li>deploy those packages to both a privately hosted repository (for work specific stuff) as well as <a href="https://pypi.org/">pypi</a> and <a href="https://anaconda.org/">Anaconda Cloud</a> or <a href="https://conda-forge.org/">conda-forge</a> for public open source stuff</li>
+  <li>Originally I was also going to include building user facing (web or CLI) apps but this got pretty long already so I think I’m going to leave that for another post</li>
+  <li>Ditto for CI/CD, linting, extensive testing, and all the other things that go into managing a project. Too big to include in this post.</li>
+</ul>
+
+<p>So a library with <code class="language-plaintext highlighter-rouge">conda</code> and <code class="language-plaintext highlighter-rouge">pip</code> packages, hosted both publicly and privately means four total ways to manage the library.</p>
+
+<h3 id="how-this-will-progress">How this will progress</h3>
+
+<p>I find that most of the packaging guides I’ve read show either how to build a completely trivial project that demonstrates one narrow feature, or some giant project that’s a lot to take in all at once. My aim is to start from a single file script and gradually build it up to the final product that I laid out in the what I’m trying to accomplish section. I’ll host the repositories for the library/app on GitHub, and use <a href="https://git-scm.com/book/en/v2/Git-Basics-Tagging">tags</a> in order to mark the progress of the project through various stages.</p>
+
+<h2 id="the-process">The process</h2>
+
+<h3 id="preliminary-setup">Preliminary setup</h3>
+
+<h4 id="create-repository">Create repository</h4>
+
+<p>The first step in any project is to make a repository. This one has the uncreative name of <a href="https://github.com/ianepreston/ianlibdemo">ianlibdemo</a>. If you want to follow along at home you can clone it and check out the tag for the associated stage in the tutorial. The state of the repository right after being created in this case can be accessed with <code class="language-plaintext highlighter-rouge">git checkout eg01</code></p>
+
+<h4 id="set-up-environment">Set up environment</h4>
+
+<p>So I have somewhere to work from, and also to make this process reproducible for others the next thing I have to do is create an isolated python environment to work in. I’m a <code class="language-plaintext highlighter-rouge">conda</code> user so I’ll create an <code class="language-plaintext highlighter-rouge">environment.yml</code> file:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">name</span><span class="pi">:</span> <span class="s">ianlibdemo_conda_env</span>
+<span class="na">dependencies</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">python</span>
+</code></pre></div></div>
+
+<p>Then I’ll create the environment with <code class="language-plaintext highlighter-rouge">conda env create -f environment.yml</code>.</p>
+
+<p>There’s absolutely nothing to this environment, which is kind of the point.</p>
+
+<h4 id="make-my-super-sweet-library">Make my super sweet library</h4>
+
+<p>Enough talk! Let’s write some code! Well, actually, I’m not going to write any code. The point of this tutorial is to build a package, not write a super awesome library, so I’m just going to copy the demo project used in <a href="https://www.youtube.com/watch?v=xiI1i525ljE">SciPy 2018 - the sheer joy of packaging</a>. The original code is <a href="https://github.com/python-packaging-tutorial/python-packaging-tutorial/tree/master/setup_example/capitalize/capitalize">here</a>. Basically what the module does is take a text file and output a copy with all the words capitalized (except a specified subset).</p>
+
+<p>In the root directory of the repository I’ll copy the <code class="language-plaintext highlighter-rouge">capital_mod.py</code> file and <code class="language-plaintext highlighter-rouge">cap_data.txt</code>. I’ll also create an <code class="language-plaintext highlighter-rouge">example_in.txt</code> file that I can use to manually test the capitalize function.</p>
+
+<p>Now I have the following files in my repository:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">ls
+</span>__pycache__/  capital_mod.py   example_in.txt   LICENSE
+cap_data.txt  environment.yml  README.md
+</code></pre></div></div>
+
+<p>I can test the “package” out from the interactive prompt:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>python <span class="nt">-i</span>
+Python 3.8.3 <span class="o">(</span>default, May 19 2020, 06:50:17<span class="o">)</span> <span class="o">[</span>MSC v.1916 64 bit <span class="o">(</span>AMD64<span class="o">)]</span> :: Anaconda, Inc. on win32
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for </span>more information.
+<span class="o">&gt;&gt;&gt;</span> import capital_mod
+<span class="o">&gt;&gt;&gt;</span> capital_mod.get_datafile_name<span class="o">()</span>
+WindowsPath<span class="o">(</span><span class="s1">'C:/Users/ianep/Documents/ianlibdemo/cap_data.txt'</span><span class="o">)</span>
+<span class="o">&gt;&gt;&gt;</span> capital_mod.capitalize<span class="o">(</span><span class="s2">"example_in.txt"</span>, <span class="s2">"example_out.txt"</span><span class="o">)</span>
+<span class="o">&gt;&gt;&gt;</span> quit<span class="o">()</span>
+</code></pre></div></div>
+
+<p>Everything looks like it ran fine, and if I check in the directory I have file <code class="language-plaintext highlighter-rouge">example_out.txt</code> that is indeed a capitalized version of <code class="language-plaintext highlighter-rouge">example_in.txt</code>. If you want to get your repository to this point run <code class="language-plaintext highlighter-rouge">git checkout eg02</code>.</p>
+
+<p>So everything works great and we can go home, right?</p>
+
+<h3 id="run-into-problems">Run into problems</h3>
+
+<p>This is all well and good, but I don’t just want to use this functionality in this folder. The idea is that this is a utility library. Presumably there are all sorts of scripts that I want to add this file capitalization capability to. Maybe I have coworkers I want to share this with, or use it in an app I’m building. As it stands how can I accomplish this?</p>
+
+<h3 id="some-bad-ways-to-solve-the-problem">Some bad ways to solve the problem</h3>
+
+<h4 id="just-copy-the-file-everywhere">Just copy the file everywhere</h4>
+
+<p>Fine. It only works from the local directory? I’ll just put a copy of it everywhere I want it. This is pretty clearly a bad idea. It will be annoying to copy the file into every location I might want to use it, if I ever have to update the functionality I will then have to track down every instance of that file and make the change repeatedly, and it violates <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</a> so any experienced developer that sees me do it will make fun of me. Better not do it this way.</p>
+
+<h4 id="add-it-to-the-path">Add it to the path</h4>
+
+<p>This is already going to be a really long guide so I don’t want to add too much about the python path directly. <a href="https://chrisyeh96.github.io/2017/08/08/definitive-guide-python-imports.html">This guide by Chris Yeh</a> is the best I’ve found on the python path and import statements, so if you’re curious by all means check that out. Briefly though, let’s demonstrate the two ways we could directly add this “package” to the path, and therefore run it without being in the same directory.</p>
+
+<p>To set the stage I’ve created a new directory separate from the package, and created a text file that I will try and capitalize:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">ls
+</span>demo_in.txt
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">cat </span>demo_in.txt
+i want to capitalize this text file, but it<span class="s1">'s in the wrong folder. oh no!
+</span></code></pre></div></div>
+
+<p>If I just try and do the same steps I did from within the folder it will fail:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">capital_mod</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">"&lt;stdin&gt;"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="nb">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s">'capital_mod'</span>
+</code></pre></div></div>
+
+<p>That’s because the folder with <code class="language-plaintext highlighter-rouge">capital_mod.py</code> is not on my path.</p>
+
+<p>One way I can solve this is by adding the path to <code class="language-plaintext highlighter-rouge">capital_mod.py</code> to my path. Like so:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">"/c/Users/Ian/Documents/ianlibdemo"</span>
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span>python <span class="nt">-i</span>
+Python 3.8.2 | packaged by conda-forge | <span class="o">(</span>default, Apr 24 2020, 07:34:03<span class="o">)</span> <span class="o">[</span>MSC v.1916 64 bit <span class="o">(</span>AMD64<span class="o">)]</span> on win32
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for </span>more information.
+<span class="o">&gt;&gt;&gt;</span> import capital_mod
+<span class="o">&gt;&gt;&gt;</span> capital_mod.get_datafile_name<span class="o">()</span>
+WindowsPath<span class="o">(</span><span class="s1">'C:/Users/Ian/Documents/ianlibdemo/cap_data.txt'</span><span class="o">)</span>
+<span class="o">&gt;&gt;&gt;</span> capital_mod.capitalize<span class="o">(</span><span class="s2">"demo_in.txt"</span>, <span class="s2">"demo_out.txt"</span><span class="o">)</span>
+<span class="o">&gt;&gt;&gt;</span> quit<span class="o">()</span>
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">cat </span>demo_out.txt
+I Want to Capitalize This Text File, But It<span class="s1">'s In the Wrong Folder. Oh No!
+</span></code></pre></div></div>
+
+<p>This worked, but I don’t want to have to run that <code class="language-plaintext highlighter-rouge">export</code> command every time before I run a script, and sharing this code with other people and telling them to do that every time seems like a hassle. There are ways to permanently add folders to your python path. <a href="https://bic-berkeley.github.io/psych-214-fall-2016/using_pythonpath.html">This guide</a> covers them nicely. But we’re not actually going to go this route so let’s move on.</p>
+
+<p>The <em>slightly</em> less hacky way is to use <code class="language-plaintext highlighter-rouge">sys.path</code> from within a python script. Back in my demo directory I can write a python script that looks like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s">r"C:\Users\Ian\Documents\ianlibdemo"</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">capital_mod</span>
+<span class="n">capital_mod</span><span class="p">.</span><span class="n">capitalize</span><span class="p">(</span><span class="s">"demo_in.txt"</span><span class="p">,</span> <span class="s">"demo_out.txt"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We can see that this works as well:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">ls
+</span>demo_in.txt  syspathdemo.py
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span>python syspathdemo.py
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">ls
+</span>demo_in.txt  demo_out.txt  syspathdemo.py
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> Ian@terra ~/Documents/demo_tmp
+<span class="nv">$ </span><span class="nb">cat </span>demo_out.txt
+I Want to Capitalize This Text File, But It<span class="s1">'s In the Wrong Folder. Oh No!
+</span></code></pre></div></div>
+
+<p>This also worked, but I had to import <code class="language-plaintext highlighter-rouge">sys</code>, and I had to know the exact path to the library. It’s going to be annoying to have to put that in every script, and if I try and share this code with anyone else they’re going to have to modify it to point to wherever they’ve saved my library code.</p>
+
+<h3 id="get-hypermodern">Get hypermodern</h3>
+
+<p>As I was working on this guide I discovered a series of articles by Claudio Jolowicz called <a href="https://cjolowicz.github.io/posts/hypermodern-python-01-setup/">Hypermodern Python</a>. The series is an opinionated (in a good way) look at how to configure a python project in 2020. It’s excellent and well worth a read, but I can’t completely adopt its recommendations for two related reasons. The first is that it assumes you’re either using a *NIX system or can load WSL2 on your Windows machine. For my work setup neither of those assumptions hold. It also assumes you’re working in the standard python ecosystem and therefore doesn’t reference <code class="language-plaintext highlighter-rouge">conda</code> either for environment management or packaging. For the remainder of this guide I’m going to try and follow Claudio’s suggestions where possible, but adapt them to incorporate <code class="language-plaintext highlighter-rouge">conda</code>.</p>
+
+<h3 id="turn-our-code-into-a-poetry-package">Turn our code into a poetry package</h3>
+
+<p><a href="https://python-poetry.org/">Poetry</a> seems to be the current best practice for building python packages. Let’s see if we can get it working with <code class="language-plaintext highlighter-rouge">conda</code>.</p>
+
+<h4 id="poetry-init">Poetry init</h4>
+
+<p>After adding <code class="language-plaintext highlighter-rouge">poetry</code> as a dependency to my <code class="language-plaintext highlighter-rouge">conda</code> environment and updating the environment I run <code class="language-plaintext highlighter-rouge">poetry init</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>poetry init
+
+This <span class="nb">command </span>will guide you through creating your pyproject.toml config.
+
+Package name <span class="o">[</span>ianlibdemo]:
+Version <span class="o">[</span>0.1.0]:
+Description <span class="o">[]</span>:  Python packaging - how does it work?
+Author <span class="o">[[</span>Ian Preston] &lt;17241371+ianepreston@users.noreply.github.com&gt;, n to skip]:  Ian Preston
+License <span class="o">[]</span>:  GPL-3.0-or-later
+Compatible Python versions <span class="o">[</span>^3.7]:
+
+Would you like to define your main dependencies interactively? <span class="o">(</span><span class="nb">yes</span>/no<span class="o">)</span> <span class="o">[</span><span class="nb">yes</span><span class="o">]</span> no
+Would you like to define your dev dependencies <span class="o">(</span>require-dev<span class="o">)</span> interactively <span class="o">(</span><span class="nb">yes</span>/no<span class="o">)</span> <span class="o">[</span><span class="nb">yes</span><span class="o">]</span> no
+Generated file
+
+<span class="o">[</span>tool.poetry]
+name <span class="o">=</span> <span class="s2">"ianlibdemo"</span>
+version <span class="o">=</span> <span class="s2">"0.1.0"</span>
+description <span class="o">=</span> <span class="s2">"Python packaging - how does it work?"</span>
+authors <span class="o">=</span> <span class="o">[</span><span class="s2">"Ian Preston"</span><span class="o">]</span>
+license <span class="o">=</span> <span class="s2">"GPL-3.0-or-later"</span>
+
+<span class="o">[</span>tool.poetry.dependencies]
+python <span class="o">=</span> <span class="s2">"^3.7"</span>
+
+<span class="o">[</span>tool.poetry.dev-dependencies]
+
+<span class="o">[</span>build-system]
+requires <span class="o">=</span> <span class="o">[</span><span class="s2">"poetry&gt;=0.12"</span><span class="o">]</span>
+build-backend <span class="o">=</span> <span class="s2">"poetry.masonry.api"</span>
+
+
+Do you confirm generation? <span class="o">(</span><span class="nb">yes</span>/no<span class="o">)</span> <span class="o">[</span><span class="nb">yes</span><span class="o">]</span> <span class="nb">yes</span>
+</code></pre></div></div>
+
+<p>At the end of this process I have a <code class="language-plaintext highlighter-rouge">pyproject.toml</code> file in the root of my repository with the text listed above inside.</p>
+
+<h4 id="src-layout">src layout</h4>
+
+<p>The root folder of this repository is getting crowded. I’ve got various files that either describe the project or the environment I’m supposed to work on it in intermingled with the actual source code for the package. To address this I’ll make a separate folder for the actual package files, and as recommended by hypermodern python I’ll use <a href="https://hynek.me/articles/testing-packaging/">src layout</a></p>
+
+<h4 id="poetry-install">poetry install</h4>
+
+<p>The last step for a basic install is to use poetry to install the package into the environment. Since poetry 1.0 it should be able to detect <code class="language-plaintext highlighter-rouge">conda</code> environments and do its installation directly into them based on <a href="https://github.com/python-poetry/poetry/pull/1432">this PR</a>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>poetry <span class="nb">install
+</span>Updating dependencies
+Resolving dependencies... <span class="o">(</span>0.1s<span class="o">)</span>
+
+Writing lock file
+
+No dependencies to <span class="nb">install </span>or update
+
+  - Installing ianlibdemo <span class="o">(</span>0.1.0<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Seems to work, let’s try that old example that wouldn’t run before:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> e975360@N2012 /c/tfs/text_demo
+<span class="nv">$ </span><span class="nb">ls
+</span>example_in.txt
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> e975360@N2012 /c/tfs/text_demo
+<span class="nv">$ </span>python <span class="nt">-i</span>
+Python 3.7.7 <span class="o">(</span>default, May  6 2020, 11:45:54<span class="o">)</span> <span class="o">[</span>MSC v.1916 64 bit <span class="o">(</span>AMD64<span class="o">)]</span> :: Anaconda, Inc. on win32
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for </span>more information.
+<span class="o">&gt;&gt;&gt;</span> from ianlibdemo.capital_mod import capitalize
+<span class="o">&gt;&gt;&gt;</span> capitalize<span class="o">(</span><span class="s2">"example_in.txt"</span>, <span class="s2">"example_out.txt"</span><span class="o">)</span>
+<span class="o">&gt;&gt;&gt;</span> quit<span class="o">()</span>
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> e975360@N2012 /c/tfs/text_demo
+<span class="nv">$ </span><span class="nb">cat </span>example_in.txt
+these words will all get capitalized, except the ones <span class="k">in </span>that super special text file, like is, or, and a.
+<span class="o">(</span>ianlibdemo_conda_env<span class="o">)</span> e975360@N2012 /c/tfs/text_demo
+<span class="nv">$ </span><span class="nb">cat </span>example_out.txt
+These Words Will All Get Capitalized, Except the Ones In That Super Special Text File, Like Is, Or, And A.
+</code></pre></div></div>
+
+<p>Magic! Note that I have to do one more layer of importing from the <code class="language-plaintext highlighter-rouge">ianlibdemo</code> package whereas before I was directly importing the <code class="language-plaintext highlighter-rouge">capital_mod</code> module, but otherwise we’re gold.</p>
+
+<p>Of course this hasn’t really solved my problem yet, I still don’t have an actual package that other people can install. But still, progress!</p>
+
+<h4 id="poetry-build">poetry build</h4>
+
+<p>It turns out that making it to the previous step was essentially all I needed to create a <code class="language-plaintext highlighter-rouge">pip</code> installable package. Just running <code class="language-plaintext highlighter-rouge">poetry build</code> from the root of the repository creates a <code class="language-plaintext highlighter-rouge">dist</code> folder containing a <a href="https://packaging.python.org/glossary/#term-source-distribution-or-sdist">sdist</a> and a <a href="https://packaging.python.org/glossary/#term-wheel">wheel</a></p>
+
+<h5 id="test-the-build">test the build</h5>
+
+<p>Having built this package, how would I install it?</p>
+
+<p>To start the test I’ll create a new empty conda environment and make sure I can’t import the <code class="language-plaintext highlighter-rouge">ianlibdemo</code> package.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>conda create <span class="nt">-n</span> pyonly python
+...
+<span class="nv">$ </span>conda activate pyonly
+<span class="nv">$ </span>python <span class="nt">-i</span>
+<span class="o">&gt;&gt;&gt;</span> import ianlibdemo
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line 1, <span class="k">in</span> &lt;module&gt;
+ModuleNotFoundError: No module named <span class="s1">'ianlibdemo'</span>
+</code></pre></div></div>
+
+<p>This verifies that I have a clean environment without that package installed. I can use <code class="language-plaintext highlighter-rouge">pip</code> to install it like so:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>pip <span class="nb">install</span> /c/tfs/ianlibdemo/dist/ianlibdemo-0.1.0-py3-none-any.whl
+<span class="nv">$ </span>python <span class="nt">-i</span>
+Python 3.8.3 <span class="o">(</span>default, May 19 2020, 06:50:17<span class="o">)</span> <span class="o">[</span>MSC v.1916 64 bit <span class="o">(</span>AMD64<span class="o">)]</span> :: Anaconda, Inc. on win32
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>
+<span class="o">&gt;&gt;&gt;</span> import ianlibdemo
+</code></pre></div></div>
+
+<p>The import ran successfully. I haven’t done a lot of validation that the package works the way I’d expect, but I’ll get to that when we set up testing later. Note that I installed the package using the <code class="language-plaintext highlighter-rouge">.whl</code> file that the build process created, but I could have also used the <code class="language-plaintext highlighter-rouge">.tar.gz</code> file in the same folder just as easily.</p>
+
+<p>Since we’ve now built a working package this seems like another good place for a checkpoint. To see the state of the project at this point you can run <code class="language-plaintext highlighter-rouge">git checkout eg03</code>.</p>
+
+<h3 id="automate-testing">Automate testing</h3>
+
+<p>This is already going to be a big post so I’m definitely not going to offer extensive notes on testing, but I’d like to include enough to at least ensure it integrates with the rest of the process, and to save manually testing after each step.</p>
+
+<h4 id="add-a-pytest-dependency">Add a pytest dependency</h4>
+
+<p>We want to use <a href="https://docs.pytest.org/en/latest/">pytest</a> for testing, so the first step is to add it as a development dependency. Normally this would be a simple one liner, <code class="language-plaintext highlighter-rouge">poetry add --dev pytest</code>, but because of <a href="https://github.com/python-poetry/poetry/issues/1290">this bug</a> between conda and poetry, at least at the time of this writing I had to install an update of msgpack before I could get it to run. I’ve amended the <code class="language-plaintext highlighter-rouge">environment.yml</code> file to include this fix, so between that and hopefully this bug being resolved in time this shouldn’t be an issue for anyone else following this guide, I just wanted to flag what I encountered and how I resolved it.</p>
+
+<h4 id="write-tests">Write tests</h4>
+
+<p>Now in the base of the repository we add a <code class="language-plaintext highlighter-rouge">tests</code> folder and add an empty <code class="language-plaintext highlighter-rouge">__init__.py</code> file and a <code class="language-plaintext highlighter-rouge">test_capitalize.py</code> file. The test file looks like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">ianlibdemo</span> <span class="kn">import</span> <span class="n">capital_mod</span>
+
+
+<span class="k">def</span> <span class="nf">test_capitalize_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span>
+    <span class="n">in_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s">"in_file.txt"</span>
+    <span class="n">in_content</span> <span class="o">=</span> <span class="s">"this is the lowercase input sentence"</span>
+    <span class="n">in_file</span><span class="p">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">in_content</span><span class="p">)</span>
+    <span class="n">out_file</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s">"out_file.txt"</span>
+    <span class="n">out_content</span> <span class="o">=</span> <span class="s">"This is the Lowercase Input Sentence</span><span class="se">\n</span><span class="s">"</span>
+    <span class="c1"># Output shouldn't exist before we call the function
+</span>    <span class="k">assert</span> <span class="ow">not</span> <span class="n">out_file</span><span class="p">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="n">capital_mod</span><span class="p">.</span><span class="n">capitalize</span><span class="p">(</span><span class="n">in_file</span><span class="p">,</span> <span class="n">out_file</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">out_file</span><span class="p">.</span><span class="n">exists</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">out_file</span><span class="p">.</span><span class="n">read_text</span><span class="p">()</span> <span class="o">==</span> <span class="n">out_content</span>
+</code></pre></div></div>
+
+<p>Now from the base directory of the repository I can run pytest with <code class="language-plaintext highlighter-rouge">poetry run pytest</code>.</p>
+
+<p>To see the project at this stage run <code class="language-plaintext highlighter-rouge">git checkout eg04</code>.</p>
+
+<h3 id="publish-to-pypi">Publish to pypi</h3>
+
+<p>I’ve built a package, I can test that it works, the next step is to publish it somewhere for others to access. The defacto source for python packages is <a href="https://pypi.org/">PyPi</a>. However, since this is just a demo package I don’t want to publish it there, since it will just add clutter. Fortunately, there is a similar location designed exactly for testing out publishing packages, appropriately named <a href="https://test.pypi.org/">Test PyPi</a>.</p>
+
+<h4 id="set-up-for-publishing">Set up for publishing</h4>
+
+<p>In order to publish packages you need an account. The registration process is straightforward. Note that pypi and test pypi use completely separate databases, and you will need an account for each of them. For now we’re just publishing to test pypi so it’s not an issue, but just something to keep in mind.</p>
+
+<p>Next I want to create an API token. You can just use your username and password to authenticate and publish packages, but tokens are the preferred method. Once you’re logged in you can click on your account, go to account settings, and under API tokens click “add API token”. Give it a descriptive name and save it somewhere secure (I put mine in a LastPass note). As they warn on the page it will only be displayed once, and if you lose it you’ll have to delete it and create a new one.</p>
+
+<p>Now we need to set up the test pypi repository in poetry. From the <a href="https://python-poetry.org/docs/repositories/">poetry docs</a> you can see that repositories are added to your poetry config:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>poetry config repositories.testpypi https://test.pypi.org/legacy/
+poetry config pypi-token.testpypi &lt;your api key&gt;
+</code></pre></div></div>
+
+<p>Note that these configurations are global to poetry, so they’re not saved in your repository. If you switch machines, or (I think) change conda environments since we installed poetry with conda you’ll have to redo these configurations.</p>
+
+<h4 id="publish">Publish</h4>
+
+<p>Once this is set up publishing is quite straightforward. If you haven’t already built the package do so with <code class="language-plaintext highlighter-rouge">poetry build</code> and then run <code class="language-plaintext highlighter-rouge">poetry publish --repository testpypi</code>.</p>
+
+<p><img src="/images/pypack/testpypi.PNG" alt="test pypi" title="package uploaded" /></p>
+
+<p>Look at that! There it is!</p>
+
+<h4 id="pull-it-back-down-and-test">Pull it back down and test</h4>
+
+<p>Let’s just make sure that all worked.</p>
+
+<p>First make a clean conda environment with just pytest for testing and activate it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda create <span class="nt">-n</span> test_env pytest
+conda activate test_env
+</code></pre></div></div>
+
+<p>Navigate to the root of your package folder and try running tests. They should fail, because we don’t have the package installed in this environment:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ~/Documents/ianlibdemo
+pytest
+<span class="nb">.</span>
+<span class="nb">.</span>
+<span class="nb">.</span>
+tests<span class="se">\t</span>est_capitalize.py:1: <span class="k">in</span> &lt;module&gt;
+    from ianlibdemo import capital_mod
+E   ModuleNotFoundError: No module named <span class="s1">'ianlibdemo'</span>
+</code></pre></div></div>
+
+<p>Now pip install that package and try running tests again:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip <span class="nb">install</span> <span class="nt">--index-url</span> https://test.pypi.org/simple/ ianlibdemo
+pytest
+<span class="nb">.</span>
+<span class="nb">.</span>
+<span class="nb">.</span>
+<span class="o">========================</span> 1 passed, 1 warning <span class="k">in </span>0.09s <span class="o">=========================</span>
+</code></pre></div></div>
+
+<p>Looks good!</p>
+
+<h3 id="publish-to-a-private-repository">Publish to a private repository</h3>
+
+<p>Not all of the code we develop should be published on the public internet. Some of it you just want accessible to an internal team. I have a private package index running using <a href="https://hub.docker.com/r/pypiserver/pypiserver">this docker container</a> - setting that up will be its own post. Once you have that all set up though the process is exactly the same as for the public pypi so I’ll leave it at that for this guide.</p>
+
+<p>None of the steps used to publish this package required changes to the library repository, so you can still use <code class="language-plaintext highlighter-rouge">git checkout eg04</code> to view the state of the repository at this point.</p>
+
+<h3 id="adding-dependencies">Adding dependencies</h3>
+
+<p>One thing I realized I should ensure is that all of this works with libraries that depend on other libraries. Let’s add a dependency on pandas and give that a shot.</p>
+
+<p>Fortunately adding a dependency is easy. Since I want to require <code class="language-plaintext highlighter-rouge">pandas</code> I just run <code class="language-plaintext highlighter-rouge">poetry add pandas</code> and it’s now a dependency. I added a module called <code class="language-plaintext highlighter-rouge">fun_pandas</code> and a test for it in my tests suite. After that I rebuilt the package and uploaded it to a repository as described above, pulled it back down and tested it like before and everything worked! It’s nice when that happens.</p>
+
+<p>To see the project at this stage you can run <code class="language-plaintext highlighter-rouge">git checkout eg05</code>.</p>
+
+<h3 id="now-do-conda">Now do conda</h3>
+
+<p>The next thing I want to work out is how to build a <code class="language-plaintext highlighter-rouge">conda</code> package. The first step is to add <code class="language-plaintext highlighter-rouge">conda-build</code> to my environment. The next step is to define a <code class="language-plaintext highlighter-rouge">meta.yaml</code> file to specify how to do the build.</p>
+
+<h4 id="sort-of-working-build">Sort of working build</h4>
+
+<p>Rather than just dump the final working file, I think it will be useful to step through from the first version I got working to the final one I’m happy with. A lot of the steps for setting this up are hacky, so seeing what doesn’t work is as important as seeing what does for people who are trying to figure out how to apply this to their own projects.</p>
+
+<p>Here’s the first version of my <code class="language-plaintext highlighter-rouge">meta.yaml</code> that actually built:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="pi">{</span><span class="err">%</span> <span class="nv">set name =  "ianlibdemo" %</span><span class="pi">}</span>
+<span class="pi">{</span><span class="err">%</span> <span class="nv">set version = "0.2.0" %</span><span class="pi">}</span>
+
+<span class="na">package</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">name|lower</span><span class="nv"> </span><span class="s">}}"</span>
+    <span class="na">version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">}}"</span>
+
+<span class="na">source</span><span class="pi">:</span>
+    <span class="na">path</span><span class="pi">:</span> <span class="s">./dist/{{ name }}-{{ version }}-py3-none-any.whl</span>
+
+<span class="na">build</span><span class="pi">:</span>
+    <span class="na">script</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">PYTHON</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">-m</span><span class="nv"> </span><span class="s">pip</span><span class="nv"> </span><span class="s">install</span><span class="nv"> </span><span class="s">./{{</span><span class="nv"> </span><span class="s">name</span><span class="nv"> </span><span class="s">}}-{{</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">}}-py3-none-any.whl</span><span class="nv"> </span><span class="s">--no-deps</span><span class="nv"> </span><span class="s">--ignore-installed</span><span class="nv"> </span><span class="s">-vv</span><span class="nv"> </span><span class="s">"</span>
+
+<span class="na">requirements</span><span class="pi">:</span>
+    <span class="na">host</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">pip</span>
+        <span class="pi">-</span> <span class="s">python</span>
+    <span class="na">run</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">python</span>
+        <span class="pi">-</span> <span class="s">pandas</span>
+
+<span class="na">test</span><span class="pi">:</span>
+    <span class="na">imports</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">ianlibdemo</span>
+
+</code></pre></div></div>
+
+<p>From an environment with <code class="language-plaintext highlighter-rouge">conda-build</code> installed I can build a package by running <code class="language-plaintext highlighter-rouge">conda-build .</code> from the base of the repository. It creates a conda package as a <code class="language-plaintext highlighter-rouge">tar.bz2</code> file in a deeply nested directory. From there I can install it into an environment with something like:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda <span class="nb">install</span> /c/Users/e975360/.conda/envs/conda_build_test/conda-bld/win-64/ianlibdemo-0.2.0-py38_0.tar.bz2
+</code></pre></div></div>
+
+<p>Running pytest in an environment with that package installed resulted in one passed test and one failure for the one requiring pandas. As we’ll see below, that issue will get solved if I can load it to a package repository so I’ll leave that alone at this point.</p>
+
+<h5 id="issues-with-this-build">Issues with this build</h5>
+
+<ul>
+  <li>First off, note that it’s called <code class="language-plaintext highlighter-rouge">meta.yaml</code> not <code class="language-plaintext highlighter-rouge">meta.yml</code>. Despite <code class="language-plaintext highlighter-rouge">.yml</code> being the common and preferred extension for this file type (see <a href="https://stackoverflow.com/questions/21059124/is-it-yaml-or-yml#:~:text=yml%22%20is%20%22the%20file%20extension,and%20is%20much%20more%20common.">this SO thread</a>) it has to end with <code class="language-plaintext highlighter-rouge">.yaml</code> or <code class="language-plaintext highlighter-rouge">conda-build</code> can’t find it.</li>
+  <li>Also note that I’m pointing it to the <code class="language-plaintext highlighter-rouge">.whl</code> file that I built with poetry, rather than the <code class="language-plaintext highlighter-rouge">.tar.gz</code> that’s in the same folder. In theory I should be able to do either, and most examples online point to <code class="language-plaintext highlighter-rouge">.tar.gz</code> files, but I got errors about not having poetry in my build environment, and when I tried to add poetry I got a version conflict because apparently the main conda repository only has the python2.7 version of poetry and… it just seemed easier to use the <code class="language-plaintext highlighter-rouge">.whl</code>.</li>
+  <li>It makes a build that claims to be specific to windows and python 3.8 when in fact this should run on any OS and any python 3.</li>
+  <li>I have to repeat the file name in two places</li>
+  <li>I’m specifying the version number in two places now since it’s already in the <code class="language-plaintext highlighter-rouge">pyproject.toml</code> file. There’s a risk of them getting out of sync</li>
+  <li>Similar to the version number I have to specify dependencies in this file as well as <code class="language-plaintext highlighter-rouge">pyproject.toml</code> (pandas in this case). Unfortunately, since conda packages can have slightly different names than their pypi counterparts, and I have to actually specify python as a dependency here I don’t think there’s an automated way to keep these in sync. Fortunately I don’t expect dependencies to change as often as the package version so this will be less of a burden to manage.</li>
+  <li>To do anything with the created package I have to scroll up through a big install log and find the path to the file</li>
+  <li>I get a bunch of build environments and intermediate files created on my machine (maybe this is why <a href="https://docs.conda.io/projects/conda-build/en/latest/user-guide/tutorials/build-pkgs-skeleton.html">the build guide</a> suggests using docker).</li>
+</ul>
+
+<h5 id="fixing-the-issues">Fixing the issues</h5>
+
+<p>Setting the build to work for any OS and python is an easy fix. Under the build section you just add one line. The build section now looks like this:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="na">build</span><span class="pi">:</span>
+    <span class="na">noarch</span><span class="pi">:</span> <span class="s">python</span>
+    <span class="na">script</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">PYTHON</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">-m</span><span class="nv"> </span><span class="s">pip</span><span class="nv"> </span><span class="s">install</span><span class="nv"> </span><span class="s">./{{</span><span class="nv"> </span><span class="s">name</span><span class="nv"> </span><span class="s">}}-{{</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">}}-py3-none-any.whl</span><span class="nv"> </span><span class="s">--no-deps</span><span class="nv"> </span><span class="s">--ignore-installed</span><span class="nv"> </span><span class="s">-vv</span><span class="nv"> </span><span class="s">"</span>
+
+</code></pre></div></div>
+
+<p>Defining the package file in once place is similarly easy. <a href="https://jinja.palletsprojects.com/en/2.11.x/">Jinja</a> lets you concatenate variables with the <code class="language-plaintext highlighter-rouge">~</code> symbol. The updated relevant section looks like this:</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="pi">{</span><span class="err">%</span> <span class="nv">set name =  "ianlibdemo" %</span><span class="pi">}</span>
+<span class="pi">{</span><span class="err">%</span> <span class="nv">set version = "0.2.0" %</span><span class="pi">}</span>
+<span class="pi">{</span><span class="err">%</span> <span class="nv">set wheel = name ~ "-" ~ version ~ "-py3-none-any.whl" %</span><span class="pi">}</span>
+<span class="na">package</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">name|lower</span><span class="nv"> </span><span class="s">}}"</span>
+    <span class="na">version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">}}"</span>
+
+<span class="na">source</span><span class="pi">:</span>
+    <span class="na">path</span><span class="pi">:</span> <span class="s">./dist/{{ wheel }}</span>
+
+<span class="na">build</span><span class="pi">:</span>
+    <span class="na">noarch</span><span class="pi">:</span> <span class="s">python</span>
+    <span class="na">script</span><span class="pi">:</span> <span class="s2">"</span><span class="s">{{</span><span class="nv"> </span><span class="s">PYTHON</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">-m</span><span class="nv"> </span><span class="s">pip</span><span class="nv"> </span><span class="s">install</span><span class="nv"> </span><span class="s">./{{</span><span class="nv"> </span><span class="s">wheel</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">--no-deps</span><span class="nv"> </span><span class="s">--ignore-installed</span><span class="nv"> </span><span class="s">-vv</span><span class="nv"> </span><span class="s">"</span>
+
+</code></pre></div></div>
+
+<h6 id="adding-a-makefile">Adding a Makefile</h6>
+
+<p>The rest of the issues outlined above aren’t directly the result of the <code class="language-plaintext highlighter-rouge">meta.yaml</code> file. To resolve them I’ll need to write some scripts, and to tie that all together I’ll use my good friend <a href="https://en.wikipedia.org/wiki/Make_(software)">Make</a>.</p>
+
+<p>To begin I add some boilerplate to the beginning of the file to handle conda environments</p>
+
+<div class="language-make highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Oneshell means I can run multiple lines in a recipe in the same shell, so I don't have to
+# chain commands together with semicolon
+</span><span class="nl">.ONESHELL</span><span class="o">:</span>
+<span class="c"># Need to specify bash in order for conda activate to work.
+</span><span class="nv">SHELL</span><span class="o">=</span>/bin/bash
+<span class="c"># Note that the extra activate is needed to ensure that the activate floats env to the front of PATH
+</span><span class="nv">CONDA_ACTIVATE</span><span class="o">=</span><span class="nb">source</span> <span class="err">$$</span><span class="o">(</span>conda info <span class="nt">--base</span><span class="o">)</span>/etc/profile.d/conda.sh <span class="p">;</span> conda activate <span class="p">;</span> conda activate
+<span class="nv">ENV_NAME</span> <span class="o">=</span> ianlibdemo_conda_env
+</code></pre></div></div>
+
+<p>Next I create a python script that will read the version number from <code class="language-plaintext highlighter-rouge">pyproject.toml</code> and update the version in <code class="language-plaintext highlighter-rouge">meta.yaml</code> with it. I won’t reproduce that script here but it’s in the <code class="language-plaintext highlighter-rouge">scripts</code> folder of the <code class="language-plaintext highlighter-rouge">ianlibdemo</code> repository.</p>
+
+<p>Finally I add a target to sync the versions. I can then make that a pre-requisite of building the <code class="language-plaintext highlighter-rouge">conda</code> package.</p>
+
+<div class="language-make highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">versionsync</span>
+
+<span class="nl">versionsync</span><span class="o">:</span>
+	<span class="nv">$(CONDA_ACTIVATE)</span> <span class="nv">$(PROJECT_NAME)</span>
+	python scripts/version_sync.py
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">.PHONY:</code> means that target should be run each time it’s called. By default <code class="language-plaintext highlighter-rouge">Make</code> won’t redo a target if an output file already exists.</p>
+
+<p>Now running <code class="language-plaintext highlighter-rouge">make versionsync</code> from the root of the repository will take the version from <code class="language-plaintext highlighter-rouge">pyproject.toml</code> and put it in <code class="language-plaintext highlighter-rouge">meta.yaml</code>.
+Eventually I’ll also want to ensure that the python package has been built by poetry before building the conda package.</p>
+
+<p>PS: I documented how you can activate conda environments from within makefiles and bash scripts <a href="http://blog.ianpreston.ca/2020/05/13/conda_envs.html">here</a>. Since I had to refer back to it when doing this I thought it would be helpful to include a pointer.</p>
+
+<p>The next issue I described above is that running <code class="language-plaintext highlighter-rouge">conda-build</code> generates the package in some obscure subdirectory and you have to scroll back up through the log file to find it. If I want to upload the package to a repository or install it directly that’s going to be a hassle. Fortunately <code class="language-plaintext highlighter-rouge">conda-build</code> comes with a <code class="language-plaintext highlighter-rouge">--output</code> flag that you can run to return where your package file would be saved if you actually ran <code class="language-plaintext highlighter-rouge">conda-build</code>. Knowing this I can write a small bash script which first builds the package and then uses the <code class="language-plaintext highlighter-rouge">--output</code> flag to find the generated package and copy it into my <code class="language-plaintext highlighter-rouge">dist</code> directory.</p>
+
+<p>The new part of the Makefile looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda:
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	bash scripts/conda_build.sh
+</code></pre></div></div>
+
+<p>And the bash script looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+conda-build <span class="nb">.</span>
+<span class="nv">CONDA_PACK</span><span class="o">=</span><span class="si">$(</span>conda-build <span class="nb">.</span> <span class="nt">--output</span><span class="si">)</span>
+<span class="nb">cp</span> <span class="nv">$CONDA_PACK</span> dist/
+</code></pre></div></div>
+
+<p>I’m going to make a cleanup function later to remove all build artifacts so we’ll leave that alone for now.</p>
+
+<h4 id="publish-to-a-public-channel">Publish to a public channel</h4>
+
+<p>To publish to an external public conda channel I have to install the <code class="language-plaintext highlighter-rouge">anaconda-client</code> package in my environment. The first time I do an upload I will need to log in with <code class="language-plaintext highlighter-rouge">anaconda login</code> and provide my username and password.</p>
+
+<p>After that I can add a new recipe to my makefile to publish the package:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>conda_ext_pub: conda
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	anaconda upload <span class="nv">$$</span><span class="o">(</span>conda-build <span class="nb">.</span> <span class="nt">--output</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">conda_ext_pub</code> depends on the <code class="language-plaintext highlighter-rouge">conda</code> recipe so this will build the package first and then upload it to Anaconda.org. After running <code class="language-plaintext highlighter-rouge">make conda_ext_pub</code> I can see that the package was indeed published to Anaconda.org:</p>
+
+<p><img src="/images/pypack/anaconda.PNG" alt="Anaconda" /></p>
+
+<p>As with the previous installations I can create a new blank environment with just pytest installed, install this package into it with <code class="language-plaintext highlighter-rouge">conda install -c ian.e.preston ianlibdemo</code> and now both my tests pass, as <code class="language-plaintext highlighter-rouge">pandas</code> is installed as well.</p>
+
+<h4 id="publish-to-a-private-channel">Publish to a private channel</h4>
+
+<p>As with the other private repository, actually setting up the repository is outside the scope of this post. This will assume that you have one created and that packages are stored on some sort of file share that you can access from your build machine. There’s no fancy way to publish conda packages to a private repository. You just drop the package file in the appropriate architecture subfolder (<code class="language-plaintext highlighter-rouge">noarch</code> in this case since this is a pure python package) and then run <code class="language-plaintext highlighter-rouge">conda index</code> on the repository folder. My server has a file watcher that detects changes and auto runs that, so all we have to do to publish a package is to make sure it’s in the right place. In this example the file share from my local machine is at <code class="language-plaintext highlighter-rouge">\\r4001\finpublic\FP&amp;A\channel_test\noarch</code> and the web server is available at http://dml01:8081/.</p>
+
+<p>To set up publishing I add the following to my makefile:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CONDA_LIB_DIR <span class="o">=</span> //r4001/finpublic/FP<span class="se">\&amp;</span>A/channel_test/noarch
+<span class="nb">.</span>
+<span class="nb">.</span>
+<span class="nb">.</span>
+conda_int_pub: conda
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	<span class="nb">cp</span> <span class="nv">$$</span><span class="o">(</span>conda-build <span class="nb">.</span> <span class="nt">--output</span><span class="o">)</span> <span class="si">$(</span>CONDA_LIB_DIR<span class="si">)</span>
+</code></pre></div></div>
+
+<p>After that I can install the package into a library by running <code class="language-plaintext highlighter-rouge">conda install -c http://dml01:8081 ianlibdemo</code>.</p>
+
+<p>To see the project at this stage you can run <code class="language-plaintext highlighter-rouge">git checkout eg06</code>.</p>
+
+<h3 id="put-it-all-together">Put it all together</h3>
+
+<p>All of the pieces are here, so the final thing to do is to put them all together. I started that process in the last section by creating a makefile, now I just have to finish it up by tying the pip packaging and publishing in with the conda packaging and publishing.</p>
+
+<h4 id="clean-slate">Clean slate</h4>
+
+<p>After a package file is built and published we don’t really have any further need for it locally, but it’s not automatically deleted. Let’s make a <code class="language-plaintext highlighter-rouge">clean</code> task in Make that will clear out any previous builds. That way any new process can start fresh.</p>
+
+<p>The clean task looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>clean:
+	<span class="c"># remove pip packages</span>
+	<span class="nb">rm</span> <span class="nt">-rf</span> ./dist/<span class="k">*</span>
+	<span class="c"># remove conda packages and build artifacts</span>
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	bash scripts/conda_clean.sh
+</code></pre></div></div>
+
+<p>and <code class="language-plaintext highlighter-rouge">conda_clean.sh</code> looks like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="nb">export </span><span class="nv">CONDA_BLD_PATH</span><span class="o">=</span><span class="k">${</span><span class="nv">CONDA_PREFIX</span><span class="k">}</span>/conda-bld
+<span class="nb">rm</span> <span class="nt">-rf</span> <span class="nv">$CONDA_BLD_PATH</span>
+</code></pre></div></div>
+
+<h4 id="full-build-chain">Full build chain</h4>
+
+<p>The last step is to add make tasks to build and publish the pip packages and set them as appropriate dependencies for the conda steps.</p>
+
+<p>First, add a task to build the pip installable package:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip: clean
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	poetry build
+</code></pre></div></div>
+
+<p>Next add tasks to publish to external and internal pip sources:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip_ext_pub: pip
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	poetry publish <span class="nt">--repository</span> testpypi
+
+pip_int_pub: pip
+	<span class="si">$(</span>CONDA_ACTIVATE<span class="si">)</span> <span class="si">$(</span>ENV_NAME<span class="si">)</span>
+	poetry publish <span class="nt">--repository</span> localpypi
+</code></pre></div></div>
+
+<p>Finally as an example we can make wrapper tasks that will publish pip and conda packages to external/internal sources:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>all_int_pub: pip_int_pub conda_int_pub
+	<span class="nb">echo</span> <span class="s2">"publishing to internal conda and pip repository"</span>
+
+all_ext_pub: pip_ext_pub conda_ext_pub
+	<span class="nb">echo</span> <span class="s2">"publishing to external conda and pip repository"</span>
+</code></pre></div></div>
+
+<p>At this point if you want to build and publish your package you can just run <code class="language-plaintext highlighter-rouge">make all_int_pub</code> and it will clear out old build artifacts, build a new pip installable package, upload it to the internal pip package repository, sync the version number with conda, build a conda package and publish that to the internal conda package repository. Not bad!</p>
+
+<p>This is concludes the changes I’m planning to make in this repository. If you just clone the repository as is you should see it in this state, or you can run <code class="language-plaintext highlighter-rouge">git checkout eg07</code>.</p>
+
+<h2 id="conclusion-and-next-steps">Conclusion and next steps.</h2>
+
+<p>This guide demonstrated how to turn some python code into an installable package, and distribute that package to internal and external users via pip or conda. At the end of this you should be able to reproduce this process for your own project. But there’s always more to do, so what are some next steps to think about?</p>
+
+<p>First of all, a lot of what we’ve done to set this project up would be broadly applicable to any library built under similar circumstances. It’d be a shame to have to rewrite or copy paste that Makefile into every library you build with minor alterations for example. It would be a good idea to use a templating tool like <a href="https://cookiecutter.readthedocs.io/en/latest/">cookiecutter</a> to automate the files and folder structure that will be consistent across projects. Stay tuned, I’m working on putting that together next.</p>
+
+<p>Next, there’s still lots of aspects of developing and maintaining a library that we haven’t touched. Things like linting, testing, coverage reporting… Take a look at the rest of the <a href="https://cjolowicz.github.io/posts/hypermodern-python-01-setup/">Hypermodern Python</a> series for some ideas there.</p>
+
+<p>Finally, I haven’t described how you actually set up an internal package repository for conda or pip packages. I’ll have a follow up post on that coming soon too.</p>
+
+<h2 id="resources-ive-consulted">Resources I’ve consulted</h2>
+
+<p>This section will serve as a link dump for things I’ve referenced while going through this process. In no particular order they are:</p>
+
+<ul>
+  <li><a href="https://www.youtube.com/watch?v=xiI1i525ljE">SciPy 2018 talk - the sheer joy of packaging</a></li>
+  <li><a href="https://snarky.ca/what-the-heck-is-pyproject-toml/">What the heck is pyproject.toml?</a></li>
+  <li><a href="https://snarky.ca/a-tutorial-on-python-package-building/">A tutorial on packaging up your python code for pypi</a></li>
+  <li><a href="https://docs.conda.io/projects/conda-build/en/latest/index.html">conda build docs</a></li>
+  <li><a href="https://dx13.co.uk/articles/2020/01/02/python-packaging-in-2020/">Python packaging in 2020</a></li>
+  <li><a href="https://hackersandslackers.com/python-poetry-package-manager/">Package python projects the proper way with poetry</a></li>
+  <li><a href="https://github.com/dojeda/poetry2conda">poetry2conda</a></li>
+  <li><a href="https://cjolowicz.github.io/posts/hypermodern-python-01-setup/">Hypermodern Python</a></li>
+  <li><a href="https://packaging.python.org/guides/hosting-your-own-index/">Host your own index</a></li>
+</ul>

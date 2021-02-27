@@ -1,0 +1,396 @@
+<h1 id="setting-up-for-data-science-in-python-on-windows">Setting up for data science in python on Windows</h1>
+
+<p>There are lots of great guides for setting up an environment to do data science. For my purposes though they generally lack two things:</p>
+
+<ul>
+  <li>They’re designed for Mac/Linux and I run Windows at work</li>
+  <li>They just don’t match my exact personal taste/environment</li>
+</ul>
+
+<p>This guide is intended to be useful for anyone trying to get set up for data science in python on windows. I think most of the steps are fairly generic, and I’ll make an effort to highlight the parts that are more opinionated. The sections below will go over the core software that will need to be installed, and some handy customizations.</p>
+
+<p><em>edit 2020-02-17</em> - I realized I wanted make as well, so I added a section on that. Also made note of an issue with launching interactive python from git bash, as well as solutions.</p>
+
+<p><em>edit 2020-08-04</em> - I started using pylance for a python language server, discovered SQL formatter, and switched to the regular Vim plugin.</p>
+
+<p><em>edit 2020-10-28</em> - Add instructions for clearing out an old install, do everything as a user level install. I cleaned up some other instructions as I went through as well.</p>
+
+<p><em>edit 2020-11-02</em> - Remove reference to pyenv-win. It’s too much of a hassle. Unfortunately my best advice there is to get access to a *NIX environment somehow.</p>
+
+<ol id="markdown-toc">
+  <li><a href="#setting-up-for-data-science-in-python-on-windows" id="markdown-toc-setting-up-for-data-science-in-python-on-windows">Setting up for data science in python on Windows</a>    <ol>
+      <li><a href="#install-vs-code" id="markdown-toc-install-vs-code">Install VS Code</a>        <ol>
+          <li><a href="#app-installation" id="markdown-toc-app-installation">App installation</a></li>
+          <li><a href="#extensions" id="markdown-toc-extensions">Extensions</a></li>
+          <li><a href="#finish-up-later" id="markdown-toc-finish-up-later">Finish up later</a></li>
+        </ol>
+      </li>
+      <li><a href="#install-git-and-bash" id="markdown-toc-install-git-and-bash">Install git and bash</a>        <ol>
+          <li><a href="#customizing-git" id="markdown-toc-customizing-git">Customizing git</a></li>
+          <li><a href="#set-up-ssh" id="markdown-toc-set-up-ssh">Set up ssh</a>            <ol>
+              <li><a href="#ssh-note" id="markdown-toc-ssh-note">SSH note</a></li>
+            </ol>
+          </li>
+          <li><a href="#additional-utilities" id="markdown-toc-additional-utilities">Additional utilities</a></li>
+          <li><a href="#further-reading" id="markdown-toc-further-reading">Further reading</a></li>
+        </ol>
+      </li>
+      <li><a href="#install-miniconda" id="markdown-toc-install-miniconda">Install Miniconda</a>        <ol>
+          <li><a href="#actually-building-environments" id="markdown-toc-actually-building-environments">Actually building environments</a></li>
+        </ol>
+      </li>
+      <li><a href="#back-to-vs-code" id="markdown-toc-back-to-vs-code">Back to VS code</a>        <ol>
+          <li><a href="#user-settings" id="markdown-toc-user-settings">User settings</a></li>
+          <li><a href="#further-resources" id="markdown-toc-further-resources">Further Resources</a></li>
+        </ol>
+      </li>
+      <li><a href="#cleaning-up-an-old-install" id="markdown-toc-cleaning-up-an-old-install">Cleaning up an old install</a>        <ol>
+          <li><a href="#uninstall-apps" id="markdown-toc-uninstall-apps">Uninstall Apps</a></li>
+          <li><a href="#remove-miscellaneous-crud" id="markdown-toc-remove-miscellaneous-crud">Remove miscellaneous crud</a></li>
+          <li><a href="#remove-config-files" id="markdown-toc-remove-config-files">Remove config files</a></li>
+        </ol>
+      </li>
+      <li><a href="#wrapping-up" id="markdown-toc-wrapping-up">Wrapping up</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="install-vs-code">Install VS Code</h2>
+
+<p>First we need an editor to actually work in. I’m a huge fan of VS code for this. It’s lightweight, extensible, free and open source, and very actively developed. Every month there’s a new release with some fancy thing that makes my life easier.</p>
+
+<h3 id="app-installation">App installation</h3>
+
+<p>Head to the <a href="https://code.visualstudio.com/download#">VS code download page</a> and pick the Win64 user installer.</p>
+
+<p>Go through the install process, I think all the defaults are fine, so just keep hitting next. You can optionally add in things like “Add open with code action to Windows Explorer”. It won’t directly impact the rest of what we’re doing, just integrates code with the rest of your desktop a little more fully.</p>
+
+<p>You can sign in with either a GitHub or Microsoft account to enable setting sync. If you use VS code on multiple machines, or just want to easily restore all your settings if you get a new computer I recommend enabling it. See the person icon in the lower left corner.</p>
+
+<p><img src="/images/windows_ds_software/code_01.png" alt="settings sync" title="settings sync" /></p>
+
+<p>On the work machine I’m testing this guide on I’m getting a settings sync error, even though the same install is syncing on my home machine. I love computers. Oh well, it means I’ll get to really walk through a fresh install for this guide.</p>
+
+<h3 id="extensions">Extensions</h3>
+
+<p>What makes VS code so great is all its extensions. Here are some that are great:</p>
+
+<ul>
+  <li>Bracket Pair Colorizer 2 colour codes your brackets. Super helpful for debugging.</li>
+  <li>Dracula Official is a nice dark theme. The Material themes are also nice.</li>
+  <li>GitLens integrates a lot of git functionality into VS code, things like showing who made what changes inline in your code.</li>
+  <li>indent-rainbow colour codes your indentation level, similar to the brackets</li>
+  <li>markdownlint gives style suggestions when writing markdown files (like this guide!)</li>
+  <li>Material icon theme makes the icons in the file explorer a little nicer</li>
+  <li>Python is pretty core for this for obvious reasons</li>
+  <li>Pylance is a new language server for Visual Studio, it offers nicer autocomplete and seems worth using.</li>
+  <li>Better TOML handles the config format of python packages</li>
+  <li>The Remote Development extension pack lets you run VS code on a local machine while developing on a remote system, Docker container, or WSL install.</li>
+  <li>SQL Formatter will clean up any sql queries you write</li>
+  <li>SQL Server (mssql) is very handy if you interact with SQL server. The first time you open this it will run a bunch of installers in the background.</li>
+  <li>Vim - Only install this if you know what Vim is and you want to use its keybindings. If you do this extension will make you very happy, if you don’t it will make you very sad.</li>
+  <li>Editorconfig - Lets VS Code parse <a href="https://editorconfig.org/">editorconfig</a> files.</li>
+</ul>
+
+<h3 id="finish-up-later">Finish up later</h3>
+
+<p>There’s more configuration to do in VS code, but prior to that let’s set up the actual applications we’ll use with it.</p>
+
+<h2 id="install-git-and-bash">Install git and bash</h2>
+
+<p>Like any sort of coding work, data science is done best under version control, and git is the defacto standard for that. Bash is not as obviously essential to coding/data science, but it comes with git, and using it for everything rather than the Windows shells will make it easier to apply instructions from other guides in the future, since most of them will assume you’re using bash. Plus I like bash way more than the command prompt or powershell.</p>
+
+<p>git does not require any special admin privileges to install. Go to the <a href="https://git-scm.com/download/win">Git download page</a> and Choose 64-bit Git for Windows Setup and run the installer. First part is to read (if you want) and accept the license:</p>
+
+<p><img src="/images/windows_ds_software/git_01.png" alt="" title="git license" /></p>
+
+<p>The default path should be fine, but take note of where it’s being installed because we’ll need to point VS code to it later</p>
+
+<p><img src="/images/windows_ds_software/git_02.png" alt="" title="git path" /></p>
+
+<p>On the components selection screen I deselect git gui because I only ever want the terminal. If you like or want to try the gui you could leave that checked. I also check “Check daily for Git for Windows updates” because I don’t want to have to remember to update.</p>
+
+<p><img src="/images/windows_ds_software/git_03.png" alt="" title="git components" /></p>
+
+<p>The next thing you’ll be prompted for is for the default editor. If you’re comfortable with vim/nano/whatever you can change it to that. I’m going to use VS code because it’s the editor I’ll be using for everything else, and I’m going to add vim bindings to it anyway:</p>
+
+<p><img src="/images/windows_ds_software/git_04.png" alt="" title="git editor" /></p>
+
+<p>Next we get to pick the default branch name for new repositories. Historically this has been “master” but most organizations are moving away from that. I’ll pick “main”.</p>
+
+<p><img src="/images/windows_ds_software/git_045.png" alt="" title="default branch" /></p>
+
+<p>At the next prompt leave it on the default, we want VS code and other tools to know git exists.</p>
+
+<p><img src="/images/windows_ds_software/git_05.png" alt="" title="git path" /></p>
+
+<p>For the SSH executable we’ll use openssh. Later we’ll configure remote development with VS code and also have to use openssh there. If you use and like putty you could swap this out, but note that VS code (at least at time of this writing) doesn’t support putty, so you’ll have to set things up separately there.</p>
+
+<p><img src="/images/windows_ds_software/git_06.png" alt="" title="git ssh" /></p>
+
+<p>Next up is the https transport backend. If this is a personal machine you can probably just leave it on OpenSSL. If it’s a work computer you should probably switch to “Use the native Windows Secure Channel library”. For example, at work my git repos are hosted on an on prem TFS server, so I definitely want my AD Domain service to validate me.</p>
+
+<p><img src="/images/windows_ds_software/git_07.png" alt="" title="git ssl" /></p>
+
+<p>At the next prompt we again want the default. Windows and *NIX systems use different symbols to denote line endings. This setting will automatically convert to the Windows format when you pull down changes, but leave them *NIX style when you push them up. This will ensure everyone is getting the correct format of text file when pulling down changes.</p>
+
+<p><img src="/images/windows_ds_software/git_08.png" alt="" title="git line endings" /></p>
+
+<p>For the default behaviour for git pull I’m fine with fast-forward or merge. If you have a different preference by all means go for it.</p>
+
+<p><img src="/images/windows_ds_software/git_085.png" alt="" title="pull" /></p>
+
+<p>Leave the console on MinTTY, it works nicer than the other. I thought you might need it to be the Windows default console to integrate with VS code but that is not the case. In fact it seems to break console integration with VS code. Go figure.</p>
+
+<p><img src="/images/windows_ds_software/git_09.png" alt="" title="git terminal" /></p>
+
+<p>Using a credential manager means that once you’ve authenticated yourself for a repository you won’t have to do it every time. Unless you’re super paranoid leave this turned on.</p>
+
+<p><img src="/images/windows_ds_software/git_10.png" alt="" title="git credentials" /></p>
+
+<p>I just left the extra options on default</p>
+
+<p><img src="/images/windows_ds_software/git_11.png" alt="" title="extras" /></p>
+
+<p>I’m going to try enabling this feature, not being able to open a python console in bash was annoying.</p>
+
+<p><img src="/images/windows_ds_software/git_12.png" alt="" /></p>
+
+<h3 id="customizing-git">Customizing git</h3>
+
+<p>There are a couple handy things that are useful to customize about git. For one, VS Code is going to make a .vscode folder anywhere we open a folder with it. We’re never going to want to commit that file to version control, so we’ll create a global gitignore file (as opposed to the more standard repository specific ones) and exclude that file. I got this idea from <a href="https://julien.danjou.info/properly-managing-your-gitignore/">this blog</a>, so credit there. In your <code class="language-plaintext highlighter-rouge">%UserProfile%\.config\git</code> folder, create a file named <code class="language-plaintext highlighter-rouge">ignore</code>. Mine is quite basic at this point:</p>
+
+<pre><code class="language-git">*.vscode
+</code></pre>
+
+<p>If you find your setup generates other files you’d like to ignore put them here, but don’t use this file for language specific stuff like <code class="language-plaintext highlighter-rouge">.ipynb-checkpoints</code>, leave that to project specific <code class="language-plaintext highlighter-rouge">.gitignore</code> files.</p>
+
+<p>The other thing that’s nice to do is clean up your default prompt. Notably, git bash by default includes <code class="language-plaintext highlighter-rouge">MINGW64</code> in the prompt. I guess this is the <code class="language-plaintext highlighter-rouge">$MSYSTEM$</code> environment variable, but I can’t imagine why I’d care to see that in my prompt. The other stuff it includes by default are pretty handy, but if you don’t like them you can modify the same file I’m going to point to to update your setup.</p>
+
+<p>The file that contains your prompt information should be in either <code class="language-plaintext highlighter-rouge">%UserProfile%\AppData\Local\Programs\Git\etc\profile.d\git-prompt.sh</code>. This is a standard bash script, so if you’re familiar with bash scripting, or modifying your bashrc in Linux or Mac this will be familiar. If not, it’s generally pretty readable. Make a backup of it and fiddle. To get rid of the <code class="language-plaintext highlighter-rouge">MINGW64</code> we just have to find the lines that say</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">PS1</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PS1</span><span class="s2">"</span><span class="s1">'\[\033[35m\]'</span>       <span class="c"># change to purple</span>
+<span class="nv">PS1</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PS1</span><span class="s2">"</span><span class="s1">'$MSYSTEM '</span>          <span class="c"># show MSYSTEM</span>
+</code></pre></div></div>
+
+<p>and delete them or comment them out. I also got rid of</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">PS1</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PS1</span><span class="s2">"</span><span class="s1">'\n'</span>                 <span class="c"># new line</span>
+</code></pre></div></div>
+
+<p>so that my conda environment would be on the same line as the rest of my setup info.</p>
+
+<h3 id="set-up-ssh">Set up ssh</h3>
+
+<p>This will actually work exactly the same as Linux, which is nice. GitHub has nice <a href="https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh">docs</a> on how to generate keys and associate them with your GitHub account, so I won’t reiterate that here. Anything you can connect to via SSH rather than password you should though. It’s more secure, and more convenient.</p>
+
+<h4 id="ssh-note">SSH note</h4>
+
+<p>I had an old install of putty when I first set up git bash. Even though I told it to use OpenSSH I guess I still had putty set somewhere in my environment. I had to modify the <code class="language-plaintext highlighter-rouge">GIT_SSH</code> environment variable for my system to point to the git ssh utility, which in my case was at <code class="language-plaintext highlighter-rouge">C:\Program Files\Git\usr\bin\ssh</code>. Most people shouldn’t have to do this.</p>
+
+<h3 id="additional-utilities">Additional utilities</h3>
+
+<p>Git bash has decent functionality out of the box, but there may be additional utilities you want to install. In my particular case, I’d like to be able to use <code class="language-plaintext highlighter-rouge">make</code> in my projects. Thanks to <a href="https://gist.github.com/evanwill/0207876c3243bbb6863e65ec5dc3f058#file-gitbash_windows-md">this gist</a> I found that it’s pretty easy to do. I’ll reproduce the <code class="language-plaintext highlighter-rouge">make</code> install instructions here, but all credit for this part goes to the original author.</p>
+
+<p>Wherever you installed git bash there should be a <code class="language-plaintext highlighter-rouge">mingw64</code> folder. My home machine did a system install, so I found it in <code class="language-plaintext highlighter-rouge">C:\Program Files\Git\mingw64</code>, but my work one was a user level install, so that one ended up in <code class="language-plaintext highlighter-rouge">%UserProfile%\AppData\Local\Programs\Git\mingw64</code>. You can always find where it is by right clicking the shortcut to git bash in your start menu and hitting properties, that will show you the path.</p>
+
+<blockquote>
+  <p>Keep in mind you can easy add <code class="language-plaintext highlighter-rouge">make</code>, but it doesn’t come packaged with all the standard UNIX build toolchain–so you will have to ensure those are installed <em>and</em> on your PATH, or you will encounter endless error messages.</p>
+</blockquote>
+
+<ul>
+  <li>Go to <a href="https://sourceforge.net/projects/ezwinports/files/">ezwinports</a>.</li>
+  <li>Download <code class="language-plaintext highlighter-rouge">make-4.1-2-without-guile-w32-bin.zip</code> (get the version without guile).</li>
+  <li>Extract zip.</li>
+  <li>Copy the contents to your <code class="language-plaintext highlighter-rouge">Git\mingw64\</code> merging the folders, but do NOT overwrite/replace any existing files.</li>
+</ul>
+
+<p>That was all I had to do to make the basic makefiles that I wanted to use. As noted above, if you want to actually build c packages or something your process will likely be more complex. For a great beginner friendly intro to makefiles in the context of python projects, check out <a href="https://calmcode.io/makefiles/the-problem.html">calm code</a>.</p>
+
+<h3 id="further-reading">Further reading</h3>
+
+<p>The <a href="https://git-scm.com/">main git page</a> has tons of resources. I’ve also collected a few that I found useful under my <a href="https://tagpacker.com/user/ian.preston?t=git">Tagpacker page.</a></p>
+
+<h2 id="install-miniconda">Install Miniconda</h2>
+
+<p>Next up we install Miniconda to handle python and all its libraries for data science. You could go with Anaconda over Miniconda for a complete setup out of the box, but I want to do all my actual work in custom environments, so having all that stuff in the base environment is just bloat. Open up the link to the <a href="https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe">Win64 MiniConda installer</a>, download and run the installer.</p>
+
+<p>We’re avoiding using admin access so you can do this with even a locked down system so leave the option on “Just Me”</p>
+
+<p><img src="/images/windows_ds_software/conda_01.png" alt="" title="conda user" /></p>
+
+<p>Default install path should be fine.</p>
+
+<p><img src="/images/windows_ds_software/conda_02.png" alt="" title="conda path" /></p>
+
+<p>Check the box to add Anaconda to the system PATH environment variable, this will allow you to use conda from git bash. I’m unchecking the box that sets conda as the default system python because I want to have a pure python install available through pyenv (more on that later).</p>
+
+<p><img src="/images/windows_ds_software/conda_03.png" alt="" title="conda syspath" /></p>
+
+<p>Finally, open up anaconda prompt and run <code class="language-plaintext highlighter-rouge">conda init bash</code>. This will allow you to run <code class="language-plaintext highlighter-rouge">conda</code> commands from within bash. By default this will also activate the conda <code class="language-plaintext highlighter-rouge">base</code> environment whenever you open a terminal. We don’t actually want that, so restart git bash to allow the first command to take effect and then run <code class="language-plaintext highlighter-rouge">conda config --set auto_activate_base false</code>.</p>
+
+<p>There’s one last thing we’ll have to do. The <code class="language-plaintext highlighter-rouge">conda init bash</code> command added some code that runs whenever you start a git bash terminal in order to allow you to run conda commands. That code is saved in <code class="language-plaintext highlighter-rouge">~/.bash_profile</code>. It will look something like this:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># &gt;&gt;&gt; conda initialize &gt;&gt;&gt;</span>
+<span class="c"># !! Contents within this block are managed by 'conda init' !!</span>
+<span class="nb">eval</span> <span class="s2">"</span><span class="si">$(</span><span class="s1">'/c/Users/&lt;your username&gt;/Miniconda3/Scripts/conda.exe'</span> <span class="s1">'shell.bash'</span> <span class="s1">'hook'</span><span class="si">)</span><span class="s2">"</span>
+<span class="c"># &lt;&lt;&lt; conda initialize &lt;&lt;&lt;</span>
+</code></pre></div></div>
+
+<p>What happens there is that whenever you open bash it runs all the commands in <code class="language-plaintext highlighter-rouge">.bash_profile</code> first. VS code for some reason does not run this script when you open a bash prompt in the built in terminal. Instead it runs <code class="language-plaintext highlighter-rouge">~/.bashrc</code> because why should anything be easy? Here’s the fix I’m using, thanks to <a href="https://stackoverflow.com/questions/57560017/stuck-when-setting-up-to-use-anaconda-with-vs-code-and-integrated-git-terminal">This StackOverflow post</a>.</p>
+
+<p>move <code class="language-plaintext highlighter-rouge">.bash_profile</code> to <code class="language-plaintext highlighter-rouge">.bashrc</code> with <code class="language-plaintext highlighter-rouge">mv ~/.bash_profile ~/.bashrc</code>. Create a new <code class="language-plaintext highlighter-rouge">~/.bash_profile</code> file that just points to <code class="language-plaintext highlighter-rouge">~/.bashrc</code> so they’ll stay in sync whether you’re using regular git bash or VS code git bash. If you want to add anything else to your bash settings later just edit <code class="language-plaintext highlighter-rouge">.bashrc</code>. So now in your home directory (%UserProfile%) create a <code class="language-plaintext highlighter-rouge">.bash_profile</code> file (either using <code class="language-plaintext highlighter-rouge">touch .bash_profile</code> from bash or in VS code, you won’t be able to from Explorer) and put in the following lines:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">[</span> <span class="nt">-f</span> ~/.bashrc <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">source</span> ~/.bashrc
+<span class="k">fi</span>
+</code></pre></div></div>
+
+<p>That should take care of it for conda installation</p>
+
+<h3 id="actually-building-environments">Actually building environments</h3>
+
+<p>Conda environment management is a big separate topic. <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">Their documentation</a> is really good, and I refer to it regularly.</p>
+
+<h2 id="back-to-vs-code">Back to VS code</h2>
+
+<h3 id="user-settings">User settings</h3>
+
+<p>VS code comes mostly with sensible defaults, but there are a few things I like to change. In VS code hit <code class="language-plaintext highlighter-rouge">F1</code> and type <code class="language-plaintext highlighter-rouge">Open settings (JSON)</code>. If you don’t see that option (it didn’t pop up for me the first time I tried it) just open settings and look for a setting that tells you to update it in <code class="language-plaintext highlighter-rouge">settings.json</code>. Below are my settings, minus the stuff that just got added through configuring the extensions described above:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"diffEditor.renderSideBySide"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"workbench.editor.enablePreviewFromQuickOpen"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"workbench.editor.enablePreview"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"workbench.colorTheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Dracula"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"workbench.iconTheme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"material-icon-theme"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.rulers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">88</span><span class="p">],</span><span class="w">
+    </span><span class="nl">"editor.suggestSelection"</span><span class="p">:</span><span class="w"> </span><span class="s2">"first"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.acceptSuggestionOnEnter"</span><span class="p">:</span><span class="w"> </span><span class="s2">"off"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.minimap.enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.lineNumbers"</span><span class="p">:</span><span class="w"> </span><span class="s2">"relative"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"explorer.confirmDelete"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.wordWrap"</span><span class="p">:</span><span class="w"> </span><span class="s2">"on"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"python.formatting.provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"black"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"python.linting.enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"python.linting.flake8Enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"python.languageServer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pylance"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"git.confirmSync"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"git.autofetch"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"editor.codeActionsOnSave"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"search.exclude"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"**/node_modules"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/bower_components"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/env"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/venv"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"files.watcherExclude"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"**/.ipynb_checkpoints/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/$tf/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.git/objects/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.git/subtree-cache/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/node_modules/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/env/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/venv/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.hypothesis/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"files.exclude"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"*.sublime-*"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/__pycache__"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.DS_Store"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.git"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.hypothesis/**"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.ipynb_checkpoints"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.pytest_cache"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/.vscode"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/*.log"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/*.lst"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/$tf"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"**/node_modules"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"venv"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Most of the settings have fairly clear names, and if you put them in your <code class="language-plaintext highlighter-rouge">settings.json</code> you’ll get a little mouseover tip that will tell you what they do.</p>
+
+<p>While you can hand code in the option to have VS code use git bash it’s probably easier to hit F1 again and select “Terminal: Select Default Shell” and choose it there. That will add a line to your settings that tells VS code to use git bash.</p>
+
+<h3 id="further-resources">Further Resources</h3>
+
+<p>There’s tons of stuff to learn about VS code to make it super handy. At a minimum, check out their <a href="https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf">keyboard shortcuts</a>. I’m collecting other useful resources (with a decent amount of overlap with vim stuff) on <a href="https://tagpacker.com/user/ian.preston?t=vs_code">my tagpacker</a>.</p>
+
+<h2 id="cleaning-up-an-old-install">Cleaning up an old install</h2>
+
+<p>I wanted to test drive my instructions before passing them along to a colleague. In order to be sure they’d actually work the way I think they should I needed to clear out my old environment. I’ll document my steps here. Hopefully this will be useful for anyone else looking to start a fresh environment on Windows.</p>
+
+<h3 id="uninstall-apps">Uninstall Apps</h3>
+
+<p>Even if you installed a program as a user level install, you’ll still be prompted for an Administrator password if you try and remove it from “Add/Remove Programs” in the control panel because… Windows. Running the actual uninstall exe file works fine though.</p>
+
+<p>For git this should be located at <code class="language-plaintext highlighter-rouge">%UserProfile%\AppData\Local\Programs\Git\unins000.exe</code>. The uninstaller won’t remove that folder itself so delete it after you’ve run it.</p>
+
+<p>VS code is in a similar location and follows a similar process <code class="language-plaintext highlighter-rouge">%UserProfile%\AppData\Local\Programs\Microsoft VS Code\unins000.exe</code>.</p>
+
+<p>Miniconda as a user level install is in a slightly different place: <code class="language-plaintext highlighter-rouge">%UserProfile%\Miniconda3\Uninstall-Miniconda3.exe</code> You’ll be prompted for an admin password a couple times, but if you click “no” it still seems to work, which is cool I guess. It will prompt you to reboot and when it comes back up you should be clear.</p>
+
+<h3 id="remove-miscellaneous-crud">Remove miscellaneous crud</h3>
+
+<p>Depending on how long you’ve been using your machine and how many different installs you’ve done you may or may not have these files. Here’s a list of the things I checked for and then removed from my machine:</p>
+
+<ul>
+  <li>
+    <p>Orphan start menu entries in <code class="language-plaintext highlighter-rouge">%UserProfile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs</code></p>
+  </li>
+  <li>
+    <p>Renmants in <code class="language-plaintext highlighter-rouge">C:\ProgramData</code>. In my case I had a folder for jupyter</p>
+  </li>
+</ul>
+
+<h3 id="remove-config-files">Remove config files</h3>
+
+<p>If you like how your configuration is set up there’s no major harm in keeping these things. I’m just removing them to make sure I have a fair comparison to how a fresh install would go. All paths in the list of stuff I’ve removed are relative to <code class="language-plaintext highlighter-rouge">%UserProfile%</code>.</p>
+
+<ul>
+  <li>.conda</li>
+  <li>.config/configstore</li>
+  <li>.continuum</li>
+  <li>.cookiecutter_replay</li>
+  <li>.cookiecutters</li>
+  <li>.ipynb_checkpoints</li>
+  <li>.ipython</li>
+  <li>.jupyter</li>
+  <li>.matplotlib</li>
+  <li>.poetry</li>
+  <li>.software</li>
+  <li>.vscode</li>
+  <li>AppData\Local\Black</li>
+  <li>AppData\Local\ContinuumIO</li>
+  <li>AppData\Local\MikTeX</li>
+  <li>AppData\Local\nvim</li>
+  <li>AppData\Local\nvim-data</li>
+  <li>AppData\Local\pip</li>
+  <li>AppData\Local\pypa</li>
+  <li>AppData\Local\pypoetry</li>
+  <li>AppData\Local\Python Tools</li>
+  <li>AppData\Local\Spyder</li>
+  <li>AppData\Local\VSCodeVim</li>
+  <li>AppData\Local\Yarn</li>
+  <li>AppData\Roaming\Code</li>
+  <li>AppData\Roaming\jupyter</li>
+  <li>AppData\Roaming\pypoetry</li>
+  <li>AppData\Roaming\Python</li>
+  <li>.bash_history</li>
+  <li>.bash_profile</li>
+  <li>.flake8</li>
+  <li>.gitconfig</li>
+  <li>.git-credentials</li>
+  <li>.gitignore_global</li>
+  <li>.python_history</li>
+</ul>
+
+<p>As you can see, managing a python development environment creates a lot of crud on your system.</p>
+
+<h2 id="wrapping-up">Wrapping up</h2>
+
+<p>That’s about it! After following this guide you should have a very comfy software setup in Windows to do data science from.</p>

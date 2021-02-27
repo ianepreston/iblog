@@ -1,0 +1,98 @@
+<h1 id="automating-provisioning-arch-continued---tldr">Automating provisioning Arch continued - tldr</h1>
+
+<ol id="markdown-toc">
+  <li><a href="#automating-provisioning-arch-continued---tldr" id="markdown-toc-automating-provisioning-arch-continued---tldr">Automating provisioning Arch continued - tldr</a>    <ol>
+      <li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+      <li><a href="#arch-usb-boot" id="markdown-toc-arch-usb-boot">Arch USB boot</a></li>
+      <li><a href="#from-the-live-boot" id="markdown-toc-from-the-live-boot">From the live boot</a>        <ol>
+          <li><a href="#setup-wifi" id="markdown-toc-setup-wifi">Setup WiFi</a></li>
+          <li><a href="#make-sure-partitions-are-set-up" id="markdown-toc-make-sure-partitions-are-set-up">Make sure partitions are set up</a></li>
+          <li><a href="#run-the-script" id="markdown-toc-run-the-script">Run the script</a></li>
+        </ol>
+      </li>
+      <li><a href="#set-up-ssh-keys" id="markdown-toc-set-up-ssh-keys">Set up ssh keys</a></li>
+      <li><a href="#set-up-wifi-again" id="markdown-toc-set-up-wifi-again">Set up WiFi again</a></li>
+      <li><a href="#run-ansible" id="markdown-toc-run-ansible">Run Ansible</a></li>
+      <li><a href="#setup-dotfiles" id="markdown-toc-setup-dotfiles">Setup dotfiles</a></li>
+      <li><a href="#conclusion" id="markdown-toc-conclusion">Conclusion</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>This note is a reference for me to put together my full provisioning pipeline.</p>
+
+<h2 id="arch-usb-boot">Arch USB boot</h2>
+
+<p>Follow <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_medium">The Arch guide</a></p>
+
+<h2 id="from-the-live-boot">From the live boot</h2>
+
+<h3 id="setup-wifi">Setup WiFi</h3>
+
+<p>In the case where I’m doing this on a laptop I’ll likely have to get on WiFi before I can continue.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>iwctl
+station wlan0 connect &lt;your SSID&gt;  <span class="c"># You can enclose it in quotes if it has spaces</span>
+&lt;enter passphrase&gt;
+<span class="nb">exit
+</span>dhcpcd wlan0
+</code></pre></div></div>
+
+<h3 id="make-sure-partitions-are-set-up">Make sure partitions are set up</h3>
+
+<p>If you’re not just going to wipe the whole disk you can run <code class="language-plaintext highlighter-rouge">lsblk</code> to determine what partitions you have. <code class="language-plaintext highlighter-rouge">cfdisk</code> has a nice interface for creating and modifying partitions if necessary. To format the boot partition run:</p>
+
+<p><code class="language-plaintext highlighter-rouge">mkfs.vfat -F32 /dev/&lt;partition&gt;</code></p>
+
+<p><code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/&lt;partition&gt;</code> will work for the root partition.</p>
+
+<h3 id="run-the-script">Run the script</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash &lt;<span class="o">(</span>curl <span class="nt">-fsSL</span> http://bootstrap.ianpreston.ca<span class="o">)</span>
+</code></pre></div></div>
+
+<p>After that power off, remove the USB and power back on.</p>
+
+<h2 id="set-up-ssh-keys">Set up ssh keys</h2>
+
+<p>Plug in the USB with ssh keys on it. <a href="http://blog.ianpreston.ca/2020/05/03/ssh.html">Guide for reference</a></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsblk  <span class="c"># find where the partition with the keys is stored</span>
+<span class="nb">mkdir </span>ssh  <span class="c"># make a mount point</span>
+<span class="nb">sudo </span>mount /dev/sd&lt;something&gt; ssh
+<span class="nb">cp</span> <span class="nt">-R</span> ssh ssh_local  <span class="c"># Have to set permissions on keys (stupid NTFS)</span>
+<span class="nb">cd </span>ssh_local/CA
+<span class="nb">chmod </span>600 host_ca
+<span class="nb">chmod </span>600 user_ca
+<span class="nb">cd</span> ../
+<span class="nb">chmod</span> +x setup_host.sh
+<span class="nb">chmod</span> +x setup_user.sh
+<span class="nb">sudo</span> ./setup_host.sh
+./setup_user.sh
+</code></pre></div></div>
+
+<h2 id="set-up-wifi-again">Set up WiFi again</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nmcli device wifi connect &lt;SSID&gt; password &lt;password&gt;
+</code></pre></div></div>
+
+<h2 id="run-ansible">Run Ansible</h2>
+
+<p>The bootstrap script cloned the repository into <code class="language-plaintext highlighter-rouge">/srv/recipes</code>. Modify the hosts file in <code class="language-plaintext highlighter-rouge">/srv/recipes/ansible/inventor/hosts</code> to include the hostname of the machine you’re setting up in the appropriate categories if you haven’t already.</p>
+
+<p>Run <code class="language-plaintext highlighter-rouge">provision_desktop.sh</code> in the ansible folder. It will fail part way through as you won’t have the keys set up for GitHub for your local user. Go through the ssh key generation process again for the newly created user, this will also make a GitHub specific key. Manually add that key to GitHub’s authorized keys and re-run the recipe. I’ve also seen it flake out a few times on particular application installs. Often I can just get past it by running <code class="language-plaintext highlighter-rouge">yay -S &lt;application&gt;</code> to manually install the problematic app. At the time of this writing there’s an additional fix required for spotify that’s mentioned on the AUR page for it. I’m not putting that in the recipe as I’m hoping it will be fixed soon.</p>
+
+<h2 id="setup-dotfiles">Setup dotfiles</h2>
+
+<p>Log in as your regular user.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ~/.dotfiles
+./setup.sh
+rcup <span class="nt">-v</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Sure, you could just install Ubuntu and be done with it, but where’s the fun in that? Why not spend weeks yak shaving your setup until you’re perfectly happy with it?</p>
