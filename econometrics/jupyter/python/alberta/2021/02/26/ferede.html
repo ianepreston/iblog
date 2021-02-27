@@ -265,6 +265,9 @@ window.onload = wrap_img;
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -497,6 +500,7 @@ window.onload = wrap_img;
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -514,6 +518,9 @@ window.onload = wrap_img;
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -662,6 +669,7 @@ window.onload = wrap_img;
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -679,6 +687,9 @@ window.onload = wrap_img;
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -878,6 +889,7 @@ window.onload = wrap_img;
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -899,6 +911,9 @@ Reproducing this chart will be a good starting check that my data extraction and
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -941,6 +956,7 @@ Reproducing this chart will be a good starting check that my data extraction and
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -1034,182 +1050,11 @@ Reproducing this chart will be a good starting check that my data extraction and
 <blockquote>
 <p>The part of resource revenue that is saved in the AHSTF is not expected to influence the provincial government’s spending and revenue-raising choices. For this reason, in our analysis, we exclude the part of the resource revenue that is saved in the AHSTF from the non-renewable-resource revenue data.</p>
 </blockquote>
-<p>For comparison, here is the same chart, but without netting AHSTF contributions from revenue revenue:</p>
+<p>For comparison, here is the same chart, but without netting AHSTF contributions from revenue:</p>
 
 </div>
 </div>
 </div>
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>personal_income_tax</th>
-      <th>corporate_income_tax</th>
-      <th>natural_resource_revenue</th>
-      <th>other_revenue</th>
-      <th>total_prog_exp</th>
-      <th>debt_service</th>
-      <th>total_heritage</th>
-      <th>heritage_dummy</th>
-      <th>natural_resource_revenue_before_heritage</th>
-      <th>total_revenue</th>
-      <th>total_expenditure</th>
-      <th>deficit</th>
-      <th>pop</th>
-      <th>cpi</th>
-    </tr>
-    <tr>
-      <th>budget_dt</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1965-01-01</th>
-      <td>231.093501</td>
-      <td>174.729232</td>
-      <td>1397.833860</td>
-      <td>1442.925275</td>
-      <td>2327.844291</td>
-      <td>11.272854</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1397.833860</td>
-      <td>3246.581868</td>
-      <td>2339.117145</td>
-      <td>-907.464724</td>
-      <td>1448000.0</td>
-      <td>0.122526</td>
-    </tr>
-    <tr>
-      <th>1966-01-01</th>
-      <td>301.024417</td>
-      <td>145.136773</td>
-      <td>1290.104645</td>
-      <td>1542.750138</td>
-      <td>2891.984579</td>
-      <td>10.750872</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1290.104645</td>
-      <td>3279.015972</td>
-      <td>2902.735451</td>
-      <td>-376.280521</td>
-      <td>1462500.0</td>
-      <td>0.127201</td>
-    </tr>
-    <tr>
-      <th>1967-01-01</th>
-      <td>407.988537</td>
-      <td>203.994268</td>
-      <td>1116.868620</td>
-      <td>2351.033944</td>
-      <td>4436.875339</td>
-      <td>10.199713</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1116.868620</td>
-      <td>4079.885369</td>
-      <td>4447.075053</td>
-      <td>367.189683</td>
-      <td>1488250.0</td>
-      <td>0.131755</td>
-    </tr>
-    <tr>
-      <th>1968-01-01</th>
-      <td>469.425988</td>
-      <td>239.503055</td>
-      <td>1360.377353</td>
-      <td>2639.323668</td>
-      <td>4368.535726</td>
-      <td>19.160244</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1360.377353</td>
-      <td>4708.630064</td>
-      <td>4387.695970</td>
-      <td>-320.934094</td>
-      <td>1522750.0</td>
-      <td>0.137098</td>
-    </tr>
-    <tr>
-      <th>1969-01-01</th>
-      <td>599.977490</td>
-      <td>286.556413</td>
-      <td>1141.748209</td>
-      <td>2444.684401</td>
-      <td>4396.849967</td>
-      <td>17.909776</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1141.748209</td>
-      <td>4472.966515</td>
-      <td>4414.759743</td>
-      <td>-58.206771</td>
-      <td>1558000.0</td>
-      <td>0.143352</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1359,6 +1204,9 @@ Let's try one more where I just substitute that one year.</p>
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -1390,6 +1238,7 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -1612,6 +1461,9 @@ Let's try one more where I just substitute that one year.</p>
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -1664,6 +1516,7 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -2044,6 +1897,9 @@ Let's try one more where I just substitute that one year.</p>
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -2084,12 +1940,16 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -2131,6 +1991,7 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -3240,6 +3101,9 @@ Let's try one more where I just substitute that one year.</p>
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -3279,6 +3143,7 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
@@ -4157,6 +4022,9 @@ Let's try one more where I just substitute that one year.</p>
     
     
 <div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
 <div class="input">
 
 <div class="inner_cell">
@@ -4214,6 +4082,7 @@ Let's try one more where I just substitute that one year.</p>
 </div>
 </div>
 
+    </details>
 </div>
     
 
