@@ -1,7 +1,13 @@
+---
+title: "Automating provisioning Arch - OS installation"
+description: "My bash script for getting a minimal working Arch install."
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [configuration, linux, arch, bash]
+---
 # Automating provisioning Arch
-
-1. TOC
-{:toc}
 
 ## Introduction
 

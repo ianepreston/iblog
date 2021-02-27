@@ -1,7 +1,12 @@
-# Using traefik for internal services
-
-1. TOC
-{:toc}
+---
+title: "Using traefik for internal services"
+description: "How to make a reverse proxy work within your LAN"
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [docker, traefik, networking, tip]
+---
 
 ## Introduction
 

@@ -1,7 +1,12 @@
-# Connecting a Harmony remote to a raspberry pi
-
-1. TOC
-{:toc}
+---
+title: "Connecting a Harmony remote to a raspberry pi"
+description: "Handy tip if you're using raspberry pi OS as a media front end and have a harmony remote, or just want to remember how to pair bluetooth from the command line."
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [tips, linux, bluetooth, pi]
+---
 
 ## Introduction
 

@@ -7,7 +7,6 @@ comments: true
 hide: false
 categories: [data, python, configuration]
 ---
-# Setting up for data science in python on Windows
 
 There are lots of great guides for setting up an environment to do data science. For my purposes though they generally lack two things:
 

@@ -1,7 +1,12 @@
-# Notes on docker-compose
-
-1. TOC
-{:toc}
+---
+title: "Notes on docker-compose"
+description: "Tiny snippets of things I forget or often have to look up about docker compose."
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [docker, tips]
+---
 
 ## Introduction
 

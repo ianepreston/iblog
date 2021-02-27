@@ -1,7 +1,12 @@
-# How to work with conda environments in shell scripts and Makefiles
-
-1. TOC
-{:toc}
+---
+title: "How to work with conda environments in shell scripts and Makefiles"
+description: "conda environments are a little tricky to incorporate into automation. This post outlines a bit of how they work, and how to integrate them in scripts and makefiles."
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [conda, python, bash]
+---
 
 I've struggled with automating working with the ```conda``` python environment manager for a while. It's a relatively small part of my work flow so I haven't made figuring it out a top priority, but it's really bugging me. In this post I'm going to document the problem and all the troubleshooting steps I went through to resolve it. I'm writing this post in parallel with actually resolving the issue, so it's going to be a bit stream of consciousness.
 
@@ -135,7 +140,7 @@ eval "$('/C/ProgramData/Miniconda3/Scripts/conda.exe' 'shell.bash' 'hook')"
 
 What happens if I just put that at the top of the script?
 
-Bash script updated: 
+Bash script updated:
 
 ```bash
 #!/bin/bash
