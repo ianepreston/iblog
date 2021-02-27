@@ -88,17 +88,17 @@ First thing to do for any install is [download the ISO](https://www.archlinux.or
 
 Then I create a base image to work off of.
 
-![base_vm](/images/arch/vm_01.PNG)
+![base_vm]({{ site.baseurl }}/images/arch/vm_01.PNG)
 
-![vm_disk](/images/arch/vm_02.PNG)
+![vm_disk]({{ site.baseurl }}/images/arch/vm_02.PNG)
 
 Fire up the new VM, and select the Arch ISO at the prompt:
 
-![vm_iso](/images/arch/vm_03.PNG)
+![vm_iso]({{ site.baseurl }}/images/arch/vm_03.PNG)
 
 After that we're at the boot prompt. Now comes the fun task of developing a bootstrap script that will automate the install process.
 
-![vm_prompt](/images/arch/vm_04.PNG)
+![vm_prompt]({{ site.baseurl }}/images/arch/vm_04.PNG)
 
 ### Getting the bootstrap script to the machine
 
@@ -106,7 +106,7 @@ I've created a [repository on GitHub](https://github.com/ianepreston/recipes) to
 
 The full URL to the raw script is at [this page](https://raw.githubusercontent.com/ianepreston/recipes/arch_bootstrap/arch_bootstrap/bootstrap.sh). That's pointing to the branch I'm using while I develop the script. When I've got it working I'll hopefully remember to come back here and point it to the master reference. From there I can go to my domain registrar and add a URL redirect record to point an easy to remember subdomain to that path:
 
-![DNS](/images/arch/DNS_01.PNG)
+![DNS]({{ site.baseurl }}/images/arch/DNS_01.PNG)
 
 So now [bootstrap.ianpreston.ca](http://bootstrap.ianpreston.ca) redirects directly to my shell script.
 
@@ -136,7 +136,7 @@ As a quick aside, I don't write bash scripts often, so I often forget how exactl
 
 Back at the VM I test my overly elaborate bootstrapping setup and...
 
-![curl](/images/arch/curl_01.PNG)
+![curl]({{ site.baseurl }}/images/arch/curl_01.PNG)
 
 Sweet!
 
@@ -627,7 +627,7 @@ install_base_system() {
   # Install networking tools
   pacstrap /mnt dialog networkmanager networkmanager-openvpn |& tee -a "${LOG}"
   [[ $? -ne 0 ]] && error_msg "Installing base system to /mnt failed. Check error messages above. Part 5."
-  
+
   if [[ $WIFI == 1 ]]; then
     pacstrap /mnt iwd |& tee -a "${LOG}"
     [[ $? -ne 0 ]] && error_msg "Installing base system to /mnt failed. Check error messages above. Wifi"
