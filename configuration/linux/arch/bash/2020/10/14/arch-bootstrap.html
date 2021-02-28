@@ -10,15 +10,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="My bash script for getting a minimal working Arch install." />
 <meta property="og:description" content="My bash script for getting a minimal working Arch install." />
-<link rel="canonical" href="https://ianepreston.github.io/iblog/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" />
-<meta property="og:url" content="https://ianepreston.github.io/iblog/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" />
+<link rel="canonical" href="https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" />
+<meta property="og:url" content="https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" />
 <meta property="og:site_name" content="Ian’s Blog" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-10-14T00:00:00-05:00" />
 <script type="application/ld+json">
-{"mainEntityOfPage":{"@type":"WebPage","@id":"https://ianepreston.github.io/iblog/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html"},"url":"https://ianepreston.github.io/iblog/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html","@type":"BlogPosting","headline":"Automating provisioning Arch - OS installation","dateModified":"2020-10-14T00:00:00-05:00","datePublished":"2020-10-14T00:00:00-05:00","description":"My bash script for getting a minimal working Arch install.","@context":"https://schema.org"}</script>
+{"mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html"},"url":"https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html","@type":"BlogPosting","headline":"Automating provisioning Arch - OS installation","dateModified":"2020-10-14T00:00:00-05:00","datePublished":"2020-10-14T00:00:00-05:00","description":"My bash script for getting a minimal working Arch install.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/iblog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://ianepreston.github.io/iblog/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/iblog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://blog.ianpreston.ca/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
@@ -69,7 +69,7 @@ window.onload = wrap_img;
 </head>
 <body><header class="site-header">
 
-  <div class="wrapper"><a class="site-title" rel="author" href="/iblog/">Ian&#39;s Blog</a><nav class="site-nav">
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Ian&#39;s Blog</a><nav class="site-nav">
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger">
           <span class="menu-icon">
@@ -79,7 +79,7 @@ window.onload = wrap_img;
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/iblog/about/">About Me</a><a class="page-link" href="/iblog/search/">Search</a><a class="page-link" href="/iblog/categories/">Tags</a></div>
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -100,16 +100,16 @@ window.onload = wrap_img;
     
       <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
       
-        <a class="category-tags-link" href="/iblog/categories/#configuration">configuration</a>
+        <a class="category-tags-link" href="/categories/#configuration">configuration</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/iblog/categories/#linux">linux</a>
+        <a class="category-tags-link" href="/categories/#linux">linux</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/iblog/categories/#arch">arch</a>
+        <a class="category-tags-link" href="/categories/#arch">arch</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/iblog/categories/#bash">bash</a>
+        <a class="category-tags-link" href="/categories/#bash">bash</a>
         
       
       </p>
@@ -259,17 +259,17 @@ station wlan0 connect &lt;your SSID&gt;  <span class="c"># You can enclose it in
 
 <p>Then I create a base image to work off of.</p>
 
-<p><img src="/iblog/images/arch/vm_01.PNG" alt="base_vm"></p>
+<p><img src="/images/arch/vm_01.PNG" alt="base_vm"></p>
 
-<p><img src="/iblog/images/arch/vm_02.PNG" alt="vm_disk"></p>
+<p><img src="/images/arch/vm_02.PNG" alt="vm_disk"></p>
 
 <p>Fire up the new VM, and select the Arch ISO at the prompt:</p>
 
-<p><img src="/iblog/images/arch/vm_03.PNG" alt="vm_iso"></p>
+<p><img src="/images/arch/vm_03.PNG" alt="vm_iso"></p>
 
 <p>After that we’re at the boot prompt. Now comes the fun task of developing a bootstrap script that will automate the install process.</p>
 
-<p><img src="/iblog/images/arch/vm_04.PNG" alt="vm_prompt"></p>
+<p><img src="/images/arch/vm_04.PNG" alt="vm_prompt"></p>
 
 <h2 id="getting-the-bootstrap-script-to-the-machine">
 <a class="anchor" href="#getting-the-bootstrap-script-to-the-machine" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting the bootstrap script to the machine</h2>
@@ -278,7 +278,7 @@ station wlan0 connect &lt;your SSID&gt;  <span class="c"># You can enclose it in
 
 <p>The full URL to the raw script is at <a href="https://raw.githubusercontent.com/ianepreston/recipes/arch_bootstrap/arch_bootstrap/bootstrap.sh">this page</a>. That’s pointing to the branch I’m using while I develop the script. When I’ve got it working I’ll hopefully remember to come back here and point it to the master reference. From there I can go to my domain registrar and add a URL redirect record to point an easy to remember subdomain to that path:</p>
 
-<p><img src="/iblog/images/arch/DNS_01.PNG" alt="DNS"></p>
+<p><img src="/images/arch/DNS_01.PNG" alt="DNS"></p>
 
 <p>So now <a href="http://bootstrap.ianpreston.ca">bootstrap.ianpreston.ca</a> redirects directly to my shell script.</p>
 
@@ -306,7 +306,7 @@ station wlan0 connect &lt;your SSID&gt;  <span class="c"># You can enclose it in
 
 <p>Back at the VM I test my overly elaborate bootstrapping setup and…</p>
 
-<p><img src="/iblog/images/arch/curl_01.PNG" alt="curl"></p>
+<p><img src="/images/arch/curl_01.PNG" alt="curl"></p>
 
 <p>Sweet!</p>
 
@@ -839,20 +839,20 @@ mount_partitions<span class="o">()</span> <span class="o">{</span>
         theme="github-light"
         crossorigin="anonymous"
         async>
-</script><a class="u-url" href="/iblog/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" hidden></a>
+</script><a class="u-url" href="/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html" hidden></a>
 </article>
       </div>
     </main><footer class="site-footer h-card">
-  <data class="u-url" href="/iblog/"></data>
+  <data class="u-url" href="/"></data>
 
   <div class="wrapper">
 
     <div class="footer-col-wrapper">
       <div class="footer-col">
         <p class="feed-subscribe">
-          <a href="/iblog/feed.xml">
+          <a href="/feed.xml">
             <svg class="svg-icon orange">
-              <use xlink:href="/iblog/assets/minima-social-icons.svg#rss"></use>
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
             </svg><span>Subscribe</span>
           </a>
         </p>
@@ -862,7 +862,7 @@ mount_partitions<span class="o">()</span> <span class="o">{</span>
       </div>
     </div>
 
-    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
 </div>
 
   </div>

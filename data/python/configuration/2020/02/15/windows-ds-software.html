@@ -10,15 +10,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="My opinionated setup to do data work in python on Windows, without admin rights." />
 <meta property="og:description" content="My opinionated setup to do data work in python on Windows, without admin rights." />
-<link rel="canonical" href="https://ianepreston.github.io/iblog/data/python/configuration/2020/02/15/windows-ds-software.html" />
-<meta property="og:url" content="https://ianepreston.github.io/iblog/data/python/configuration/2020/02/15/windows-ds-software.html" />
+<link rel="canonical" href="https://blog.ianpreston.ca/data/python/configuration/2020/02/15/windows-ds-software.html" />
+<meta property="og:url" content="https://blog.ianpreston.ca/data/python/configuration/2020/02/15/windows-ds-software.html" />
 <meta property="og:site_name" content="Ian’s Blog" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-02-15T00:00:00-06:00" />
 <script type="application/ld+json">
-{"mainEntityOfPage":{"@type":"WebPage","@id":"https://ianepreston.github.io/iblog/data/python/configuration/2020/02/15/windows-ds-software.html"},"url":"https://ianepreston.github.io/iblog/data/python/configuration/2020/02/15/windows-ds-software.html","@type":"BlogPosting","headline":"Setting up for data science in python on Windows","dateModified":"2020-02-15T00:00:00-06:00","datePublished":"2020-02-15T00:00:00-06:00","description":"My opinionated setup to do data work in python on Windows, without admin rights.","@context":"https://schema.org"}</script>
+{"mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.ianpreston.ca/data/python/configuration/2020/02/15/windows-ds-software.html"},"url":"https://blog.ianpreston.ca/data/python/configuration/2020/02/15/windows-ds-software.html","@type":"BlogPosting","headline":"Setting up for data science in python on Windows","dateModified":"2020-02-15T00:00:00-06:00","datePublished":"2020-02-15T00:00:00-06:00","description":"My opinionated setup to do data work in python on Windows, without admin rights.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/iblog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://ianepreston.github.io/iblog/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/iblog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://blog.ianpreston.ca/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
@@ -69,7 +69,7 @@ window.onload = wrap_img;
 </head>
 <body><header class="site-header">
 
-  <div class="wrapper"><a class="site-title" rel="author" href="/iblog/">Ian&#39;s Blog</a><nav class="site-nav">
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Ian&#39;s Blog</a><nav class="site-nav">
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger">
           <span class="menu-icon">
@@ -79,7 +79,7 @@ window.onload = wrap_img;
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/iblog/about/">About Me</a><a class="page-link" href="/iblog/search/">Search</a><a class="page-link" href="/iblog/categories/">Tags</a></div>
+        <div class="trigger"><a class="page-link" href="/about/">About Me</a><a class="page-link" href="/search/">Search</a><a class="page-link" href="/categories/">Tags</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -100,13 +100,13 @@ window.onload = wrap_img;
     
       <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
       
-        <a class="category-tags-link" href="/iblog/categories/#data">data</a>
+        <a class="category-tags-link" href="/categories/#data">data</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/iblog/categories/#python">python</a>
+        <a class="category-tags-link" href="/categories/#python">python</a>
         &nbsp;
       
-        <a class="category-tags-link" href="/iblog/categories/#configuration">configuration</a>
+        <a class="category-tags-link" href="/categories/#configuration">configuration</a>
         
       
       </p>
@@ -185,7 +185,7 @@ window.onload = wrap_img;
 
 <p>You can sign in with either a GitHub or Microsoft account to enable setting sync. If you use VS code on multiple machines, or just want to easily restore all your settings if you get a new computer I recommend enabling it. See the person icon in the lower left corner.</p>
 
-<p><img src="/iblog/images/windows_ds_software/code_01.png" alt="settings sync" title="settings sync"></p>
+<p><img src="/images/windows_ds_software/code_01.png" alt="settings sync" title="settings sync"></p>
 
 <p>On the work machine I’m testing this guide on I’m getting a settings sync error, even though the same install is syncing on my home machine. I love computers. Oh well, it means I’ll get to really walk through a fresh install for this guide.</p>
 
@@ -223,59 +223,59 @@ window.onload = wrap_img;
 
 <p>git does not require any special admin privileges to install. Go to the <a href="https://git-scm.com/download/win">Git download page</a> and Choose 64-bit Git for Windows Setup and run the installer. First part is to read (if you want) and accept the license:</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_01.png" alt="" title="git license"></p>
+<p><img src="/images/windows_ds_software/git_01.png" alt="" title="git license"></p>
 
 <p>The default path should be fine, but take note of where it’s being installed because we’ll need to point VS code to it later</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_02.png" alt="" title="git path"></p>
+<p><img src="/images/windows_ds_software/git_02.png" alt="" title="git path"></p>
 
 <p>On the components selection screen I deselect git gui because I only ever want the terminal. If you like or want to try the gui you could leave that checked. I also check “Check daily for Git for Windows updates” because I don’t want to have to remember to update.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_03.png" alt="" title="git components"></p>
+<p><img src="/images/windows_ds_software/git_03.png" alt="" title="git components"></p>
 
 <p>The next thing you’ll be prompted for is for the default editor. If you’re comfortable with vim/nano/whatever you can change it to that. I’m going to use VS code because it’s the editor I’ll be using for everything else, and I’m going to add vim bindings to it anyway:</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_04.png" alt="" title="git editor"></p>
+<p><img src="/images/windows_ds_software/git_04.png" alt="" title="git editor"></p>
 
 <p>Next we get to pick the default branch name for new repositories. Historically this has been “master” but most organizations are moving away from that. I’ll pick “main”.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_045.png" alt="" title="default branch"></p>
+<p><img src="/images/windows_ds_software/git_045.png" alt="" title="default branch"></p>
 
 <p>At the next prompt leave it on the default, we want VS code and other tools to know git exists.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_05.png" alt="" title="git path"></p>
+<p><img src="/images/windows_ds_software/git_05.png" alt="" title="git path"></p>
 
 <p>For the SSH executable we’ll use openssh. Later we’ll configure remote development with VS code and also have to use openssh there. If you use and like putty you could swap this out, but note that VS code (at least at time of this writing) doesn’t support putty, so you’ll have to set things up separately there.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_06.png" alt="" title="git ssh"></p>
+<p><img src="/images/windows_ds_software/git_06.png" alt="" title="git ssh"></p>
 
 <p>Next up is the https transport backend. If this is a personal machine you can probably just leave it on OpenSSL. If it’s a work computer you should probably switch to “Use the native Windows Secure Channel library”. For example, at work my git repos are hosted on an on prem TFS server, so I definitely want my AD Domain service to validate me.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_07.png" alt="" title="git ssl"></p>
+<p><img src="/images/windows_ds_software/git_07.png" alt="" title="git ssl"></p>
 
 <p>At the next prompt we again want the default. Windows and *NIX systems use different symbols to denote line endings. This setting will automatically convert to the Windows format when you pull down changes, but leave them *NIX style when you push them up. This will ensure everyone is getting the correct format of text file when pulling down changes.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_08.png" alt="" title="git line endings"></p>
+<p><img src="/images/windows_ds_software/git_08.png" alt="" title="git line endings"></p>
 
 <p>For the default behaviour for git pull I’m fine with fast-forward or merge. If you have a different preference by all means go for it.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_085.png" alt="" title="pull"></p>
+<p><img src="/images/windows_ds_software/git_085.png" alt="" title="pull"></p>
 
 <p>Leave the console on MinTTY, it works nicer than the other. I thought you might need it to be the Windows default console to integrate with VS code but that is not the case. In fact it seems to break console integration with VS code. Go figure.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_09.png" alt="" title="git terminal"></p>
+<p><img src="/images/windows_ds_software/git_09.png" alt="" title="git terminal"></p>
 
 <p>Using a credential manager means that once you’ve authenticated yourself for a repository you won’t have to do it every time. Unless you’re super paranoid leave this turned on.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_10.png" alt="" title="git credentials"></p>
+<p><img src="/images/windows_ds_software/git_10.png" alt="" title="git credentials"></p>
 
 <p>I just left the extra options on default</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_11.png" alt="" title="extras"></p>
+<p><img src="/images/windows_ds_software/git_11.png" alt="" title="extras"></p>
 
 <p>I’m going to try enabling this feature, not being able to open a python console in bash was annoying.</p>
 
-<p><img src="/iblog/images/windows_ds_software/git_12.png" alt=""></p>
+<p><img src="/images/windows_ds_software/git_12.png" alt=""></p>
 
 <h2 id="customizing-git">
 <a class="anchor" href="#customizing-git" aria-hidden="true"><span class="octicon octicon-link"></span></a>Customizing git</h2>
@@ -344,15 +344,15 @@ window.onload = wrap_img;
 
 <p>We’re avoiding using admin access so you can do this with even a locked down system so leave the option on “Just Me”</p>
 
-<p><img src="/iblog/images/windows_ds_software/conda_01.png" alt="" title="conda user"></p>
+<p><img src="/images/windows_ds_software/conda_01.png" alt="" title="conda user"></p>
 
 <p>Default install path should be fine.</p>
 
-<p><img src="/iblog/images/windows_ds_software/conda_02.png" alt="" title="conda path"></p>
+<p><img src="/images/windows_ds_software/conda_02.png" alt="" title="conda path"></p>
 
 <p>Check the box to add Anaconda to the system PATH environment variable, this will allow you to use conda from git bash. I’m unchecking the box that sets conda as the default system python because I want to have a pure python install available through pyenv (more on that later).</p>
 
-<p><img src="/iblog/images/windows_ds_software/conda_03.png" alt="" title="conda syspath"></p>
+<p><img src="/images/windows_ds_software/conda_03.png" alt="" title="conda syspath"></p>
 
 <p>Finally, open up anaconda prompt and run <code class="language-plaintext highlighter-rouge">conda init bash</code>. This will allow you to run <code class="language-plaintext highlighter-rouge">conda</code> commands from within bash. By default this will also activate the conda <code class="language-plaintext highlighter-rouge">base</code> environment whenever you open a terminal. We don’t actually want that, so restart git bash to allow the first command to take effect and then run <code class="language-plaintext highlighter-rouge">conda config --set auto_activate_base false</code>.</p>
 
@@ -539,20 +539,20 @@ window.onload = wrap_img;
         theme="github-light"
         crossorigin="anonymous"
         async>
-</script><a class="u-url" href="/iblog/data/python/configuration/2020/02/15/windows-ds-software.html" hidden></a>
+</script><a class="u-url" href="/data/python/configuration/2020/02/15/windows-ds-software.html" hidden></a>
 </article>
       </div>
     </main><footer class="site-footer h-card">
-  <data class="u-url" href="/iblog/"></data>
+  <data class="u-url" href="/"></data>
 
   <div class="wrapper">
 
     <div class="footer-col-wrapper">
       <div class="footer-col">
         <p class="feed-subscribe">
-          <a href="/iblog/feed.xml">
+          <a href="/feed.xml">
             <svg class="svg-icon orange">
-              <use xlink:href="/iblog/assets/minima-social-icons.svg#rss"></use>
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
             </svg><span>Subscribe</span>
           </a>
         </p>
@@ -562,7 +562,7 @@ window.onload = wrap_img;
       </div>
     </div>
 
-    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
 </div>
 
   </div>

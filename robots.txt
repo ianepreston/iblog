@@ -1,1 +1,1 @@
-Sitemap: https://ianepreston.github.io/iblog/sitemap.xml
+Sitemap: https://blog.ianpreston.ca/sitemap.xml
