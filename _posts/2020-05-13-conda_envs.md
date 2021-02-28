@@ -1,11 +1,16 @@
-# How to work with conda environments in shell scripts and Makefiles
-
-1. TOC
-{:toc}
+---
+title: "How to work with conda environments in shell scripts and Makefiles"
+description: "conda environments are a little tricky to incorporate into automation. This post outlines a bit of how they work, and how to integrate them in scripts and makefiles."
+layout: post
+toc: true
+comments: true
+hide: false
+categories: [conda, python, bash]
+---
 
 I've struggled with automating working with the ```conda``` python environment manager for a while. It's a relatively small part of my work flow so I haven't made figuring it out a top priority, but it's really bugging me. In this post I'm going to document the problem and all the troubleshooting steps I went through to resolve it. I'm writing this post in parallel with actually resolving the issue, so it's going to be a bit stream of consciousness.
 
-## Setting up the problem
+# Setting up the problem
 
 I have conda installed. I'm using bash as my shell. I've run ```conda init bash``` and my version of conda is new enough that this works nicely in interactive mode.
 
@@ -108,7 +113,7 @@ ModuleNotFoundError: No module named 'numpy'
 
 ```
 
-## What's going on?
+# What's going on?
 
 There's actually some guidance in the full error message from the attempt above. The relevant section is this:
 
@@ -131,11 +136,11 @@ eval "$('/C/ProgramData/Miniconda3/Scripts/conda.exe' 'shell.bash' 'hook')"
 # <<< conda initialize <<<
 ```
 
-## Possible solution
+# Possible solution
 
 What happens if I just put that at the top of the script?
 
-Bash script updated: 
+Bash script updated:
 
 ```bash
 #!/bin/bash
@@ -160,7 +165,7 @@ Running python script
 
 It worked! Notably, I'm still in my base environment when the script exits. The activation only happens in the subshell. I also tested running this script from a prompt that was already in that environment and it ran fine as well.
 
-## Possible problem and solution
+# Possible problem and solution
 
 Ok, this works as long as I'm either the only person trying to use this script, or everyone else is also running Miniconda on Windows from a system level install. That seems pretty fragile. Can we improve this?
 
@@ -179,7 +184,7 @@ python eg.py
 
 This works too! Getting pretty close to a nice solution.
 
-## Ok, how about MakeFiles?
+# Ok, how about MakeFiles?
 
 Because I am fancy, I like to have a MakeFile for my projects, which I can then use to run scripts or series of commands with nice convenient shortcuts. Most of what I do could definitely be accomplished with pure shell scripting, but it will be a little nicer if I can do it with Make, so let's try.
 
@@ -231,15 +236,15 @@ test: active
 But the activation from ```active``` didn't persist into running ```test```. Maybe there's a way to get that working but I'm going to call this close enough for my needs.
 
 
-## Conclusion
+# Conclusion
 
 Getting conda activation to work from within bash and Makefiles is a finicky process. Or at least I don't have a strong enough understanding of subshells, environment variables conda and probably some other things to make it seem otherwise. That said, the steps outlined in this guide should allow you to automate processes involving conda environments without too much hassle.
 
-## The final scripts
+# The final scripts
 
 For reference, here's the final form of what I used to setup and test this demo:
 
-### Makefile
+## Makefile
 
 ```bash
 # Oneshell means I can run multiple lines in a recipe in the same shell, so I don't have to
@@ -270,7 +275,7 @@ run_sh:
     bash eg.sh
 ```
 
-### env.yml
+## env.yml
 
 ```yml
 name: eg_env
@@ -279,7 +284,7 @@ dependencies:
     - black
 ```
 
-### eg.py
+## eg.py
 
 ```python
 import numpy as np
@@ -287,7 +292,7 @@ import numpy as np
 print(np.__version__)
 ```
 
-### eg.sh (for makefile)
+## eg.sh (for makefile)
 
 ```bash
 #!/bin/bash
@@ -297,7 +302,7 @@ echo "Running python script"
 python eg.py
 ```
 
-### eg.sh (standalone)
+## eg.sh (standalone)
 
 ```bash
 #!/bin/bash
