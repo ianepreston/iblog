@@ -9,6 +9,13 @@ categories: [configuration, linux, arch, bash]
 ---
 # Automating provisioning Arch
 
+This is part 1 of a 4 part series describing how I provision my systems. Links to each part are below:
+
+* [part 1 - The base OS install](https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html)
+* [part 2 - Software install and system configuration with Ansible](https://blog.ianpreston.ca/configuration/ansible/linux/arch/2020/11/21/ansible.html)
+* [part 3 - User level and python environment config with dotfiles and mkrc](https://blog.ianpreston.ca/configuration/linux/arch/python/2020/11/25/dotfiles.html)
+* [part 4 - The tldr that wraps up how to do the whole thing from start to finish](https://blog.ianpreston.ca/configuration/linux/arch/2020/11/26/arch-tldr.html)]
+
 # Introduction
 
 ## edit 2020-10-20
