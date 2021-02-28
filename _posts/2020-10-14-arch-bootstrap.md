@@ -9,29 +9,29 @@ categories: [configuration, linux, arch, bash]
 ---
 # Automating provisioning Arch
 
-## Introduction
+# Introduction
 
-### edit 2020-10-20
+## edit 2020-10-20
 
 As I use this script to provision machines I'm going to end up making edits to it. I'm not going to edit this post every time I do that. The latest version of the provision script is always available [here](https://github.com/ianepreston/recipes/blob/master/arch_bootstrap/bootstrap.sh).
 
 I've also updated the TLDR section a bit based on some experience from the install. That part I will update if I make changes since I use it for reference when building systems.
 
-### Actual Introduction
+## Actual Introduction
 
 I've installed a lot of operating systems a lot of times. The goal of writing out this post is to force me to really think about and clearly document a reproducible workflow for building my workstation.
 
 A secondary goal is to get better at bash.
 
-## Inspiration
+# Inspiration
 
 There are a lot of very smart people out there doing similar things. In the past I've used Luke Smith's [LARBS](https://larbs.xyz/) as a base that I forked and modified. There was also [this recent discussion on Reddit](https://www.reddit.com/r/archlinux/comments/gle74o/how_do_you_provision_your_system/) which pointed me to a couple of very interesting repositories to get inspiration from: [Brennan Fee's provision-arch](https://github.com/brennanfee/provision-arch) and [Morten Linderud's PKGBUILDS](https://github.com/Foxboron/PKGBUILDS)
 
-## TLDR
+# TLDR
 
 For future me when I want to actually just install Arch on a system:
 
-### Setting up WiFi
+## Setting up WiFi
 
 In the case where I'm doing this on a laptop I'll likely have to get on WiFi before I can continue.
 
@@ -47,17 +47,17 @@ dhcpcd wlan0
 
 That should work, try pinging something just to be safe.
 
-### Make sure partitions are set up
+## Make sure partitions are set up
 
 I'm a wuss and don't trust a script to actually create partitions. ```lsblk``` will tell you what disks you have. If you need to create/delete partitions before proceeding use ```cfdisk /dev/sd<letter>``` to create them. If it's a completely blank hard drive and you need to create a boot partition make one at the beginning of the disk with 500M of space in ```cfdisk``` and then run ```mkfs.vfat -F32 /dev/sd<letter>1``` to format it. There's probably a cleaner way to clean out the LVMs this script creates but for now it's easier for me to just blow them away in ```cfdisk``` and create a fresh partition to install over. *edit: I got braver. The new script has an option to just wipe the whole disk if you want.*
 
-### Run the script
+## Run the script
 
 ```bash
 bash <(curl -fsSL http://bootstrap.ianpreston.ca)
 ```
 
-### Post install
+## Post install
 
 * Get the Wifi going again. It's a different command than you use from the installer:
 
@@ -84,11 +84,11 @@ sudo ./setup_host.sh
 
 After this point you should be able to run ansible to complete the setup.
 
-## Setting up for testing
+# Setting up for testing
 
 I ended up working on this project over a period of time. Initially I was using a VM in Virtualbox. I document the steps for setting that up below. After a while I ended up putting docker on my Windows machine that I was using for testing, and found it conflicted with Virtualbox, so I switched to Hyper-V. Finally I got my hands on a beater notebook and ended up finishing up on that.
 
-### Prepping the VM
+## Prepping the VM
 
 First thing to do for any install is [download the ISO](https://www.archlinux.org/download/). I'm going to use [Virtualbox](https://www.virtualbox.org/) as my hypervisor. No particular reason, I've just used it in the past and am comfortable with it.
 
@@ -106,7 +106,7 @@ After that we're at the boot prompt. Now comes the fun task of developing a boot
 
 ![vm_prompt]({{ site.baseurl }}/images/arch/vm_04.PNG)
 
-### Getting the bootstrap script to the machine
+## Getting the bootstrap script to the machine
 
 I've created a [repository on GitHub](https://github.com/ianepreston/recipes) to host code like this. I think I could probably just install git on the boot machine, clone the whole repo, navigate to the bootstrap script, and run it. That's no fun though. Let's see if I can find a more complicated approach just to save a few keystrokes.
 
@@ -146,11 +146,11 @@ Back at the VM I test my overly elaborate bootstrapping setup and...
 
 Sweet!
 
-## Bootstrapping the install
+# Bootstrapping the install
 
 Borrowing liberally from the [Arch Install Guide](https://wiki.archlinux.org/index.php/installation_guide) and the previously mentioned arch bootstrap script by [Brennan Fee](https://github.com/brennanfee/provision-arch/blob/master/bootstrap/arch-install) let's build up a script to auto install Arch. The goal isn't to do everything with the script, we just need to get to a minimal environment with an SSH server so that Ansible can take over.
 
-### Strict mode
+## Strict mode
 
 The first couple lines of Brennan's script include a bunch of things I don't really understand. Since part of the goal of this is learning more bash I'm going to dissect them before moving on. The lines in question are:
 
@@ -202,7 +202,7 @@ The next line is a bit of error handling as well. ```trap``` catches certain sig
 
 The final line in the block changes the [internal field separator](https://bash.cyberciti.biz/guide/$IFS) from the default of \<space\>\<tab\>\<newline\> to \<newline\>\<tab\>. The link above explains in general what that's for. We'll have to get a bit farther along in the script to see why it's being used here.
 
-### Text formatting
+## Text formatting
 
 That part was dense. The next few lines are easier:
 
@@ -219,7 +219,7 @@ Yellow="\033[33m"
 
 Text enclosed within ```$Bold``` and ```$Reset``` will be bolded. Similarly, enclosing within one of the colours and ```$Reset``` will set the text to that colour.
 
-### Setup paths
+## Setup paths
 
 The next section sets up a log file:
 
@@ -236,7 +236,7 @@ The next line checks if the logfile exists, and deletes it if it does.
 
 The final line writes "Start log..." into the logfile. ```>>``` redirects the output of the  previous command to the end of the file on the right hand side. Since we know this is a brand new file (because of the line above) this will be the first line of the logfile.
 
-### Flags and variables
+## Flags and variables
 
 The next section sets up some system based flags
 
@@ -249,7 +249,7 @@ WIFI=0
 
 ```uname``` returns system information, and the ```-m``` flag specifies to return the machine hardware. As the comment above describes this will likely return ```x86_64```. Later in the script we'll check if the system is [UEFI](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface) or BIOS.
 
-### User provided variables
+## User provided variables
 
 Here we just provide some defaults to variables that the user will set later in the script.
 
@@ -262,7 +262,7 @@ ROOT_PWD=""
 ANSIBLE_PWD=""
 ```
 
-### Common helper functions
+## Common helper functions
 
 The next section has a series of small functions that will be used throughout the larger script. Let's see what they do. The first one is:
 
@@ -344,7 +344,7 @@ is_package_installed() {
 
 ```pacman -Q``` searches for a package matching the subsequent argument. If it finds it it will return its full name and version. If it can't it will return an error. So this function will return 0 if any packages are found, and 1 if none of them are.
 
-### Verification functions
+## Verification functions
 
 These are also helper functions, but they're specifically designed to make sure the script is being run from the correct environment.
 
@@ -385,7 +385,7 @@ check_boot_system() {
   fi
 
   if [[ -d "/sys/firmware/efi/" ]]; then
-    ## Mount efivarfs if it is not already mounted
+    # Mount efivarfs if it is not already mounted
     # shellcheck disable=SC2143
     if [[ -z $(mount | grep /sys/firmware/efi/efivars) ]]; then
       mount -t efivarfs efivarfs /sys/firmware/efi/efivars
@@ -412,7 +412,7 @@ check_wifi() {
 
 As per the [Arch Wikie](https://wiki.archlinux.org/index.php/Network_configuration#Listing_network_interfaces) ```/sys/class/net``` lists all network devices. So if I list that directory and match on ```wlan``` then I know there's a wireless device. I'll use this to determine whether or not to install wireless tools when loading software.
 
-### Prompts / User interaction
+## Prompts / User interaction
 
 The first prompt asks for a hostname for the system. It had some code for auto naming that I trimmed out. The rest of it is pretty self explanatory:
 
@@ -469,7 +469,7 @@ The original script has some similar functions to pick a second disk, but I'm no
 
 There are a few other selection scripts (to set a root password and kernel version for example), but there's nothing new in terms of BASH in them so I'll omit them from this post.
 
-### Installation/configuration options
+## Installation/configuration options
 
 Now we get to functions that actually help with the installation and configuration of the system.
 
@@ -506,7 +506,7 @@ Next the script installs [reflector](https://wiki.archlinux.org/index.php/Reflec
 
 The rest of the script is pretty well commented and straightforward.
 
-#### Partitioning
+### Partitioning
 
 The script I'm templating off of is designed to wipe an entire disk. I generally dual boot Windows so I definitely don't want that option. In light of that I had to tweak this section a fair bit. Rather than wiping the whole disk and creating new partitions like the template script, I want to identify an existing boot and linux partition and install to them. See the TLDR section for setting up a fresh disk. If you've already installed Arch on the disk you're targeting you should also clear out the partition with the LVMs on it and start with a blank slate. That's not done by the script, check the TLDR section for how to manage that.
 
@@ -600,7 +600,7 @@ mount_partitions() {
 
 Again, most of this is pretty readable. The one that I didn't know about was the ```noatime``` option. In the original script it was set to ```relatime```, but after reading [this post](https://blog.confirm.ch/mount-options-atime-vs-relatime/) it seems like I want ```noatime``` to improve the life of my SSD.
 
-### Installation
+## Installation
 
 The ```install_base_system``` function doesn't really introduce any new bash stuff, which was my main goal in writing out how this all worked line by line. I'll present it below without further comment.
 
@@ -678,6 +678,6 @@ setup_ansible_account() {
 
 ```useradd``` does about what you'd expect. ```-m``` creates a home directory for that user if it doesn't exist. ```-G``` is followed by a list of groups you want the user to be a part of. In this case we want ansible to be part of [wheel](https://en.wikipedia.org/wiki/Wheel_(computing)) so it can perform actions with elevated privileges. ```chpasswd``` is a pretty cool way to set a user password from a script without user interaction, [man pages here](https://linux.die.net/man/8/chpasswd). ```chfn``` is used to change user info, in this case to give the ansible user the first name Ansible.
 
-## Conclusion and next steps
+# Conclusion and next steps
 
 After running this script you have a bare bones Arch install. The next step is to create users and install all the software and configurations you need to get a functioning system. This post is already getting really long so I'm going to break that part up into a future post.

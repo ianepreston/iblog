@@ -23,11 +23,11 @@ This guide is intended to be useful for anyone trying to get set up for data sci
 
 *edit 2020-11-02* - Remove reference to pyenv-win. It's too much of a hassle. Unfortunately my best advice there is to get access to a *NIX environment somehow.
 
-## Install VS Code
+# Install VS Code
 
 First we need an editor to actually work in. I'm a huge fan of VS code for this. It's lightweight, extensible, free and open source, and very actively developed. Every month there's a new release with some fancy thing that makes my life easier.
 
-### App installation
+## App installation
 
 Head to the [VS code download page](https://code.visualstudio.com/download#) and pick the Win64 user installer.
 
@@ -39,7 +39,7 @@ You can sign in with either a GitHub or Microsoft account to enable setting sync
 
 On the work machine I'm testing this guide on I'm getting a settings sync error, even though the same install is syncing on my home machine. I love computers. Oh well, it means I'll get to really walk through a fresh install for this guide.
 
-### Extensions
+## Extensions
 
 What makes VS code so great is all its extensions. Here are some that are great:
 
@@ -58,11 +58,11 @@ What makes VS code so great is all its extensions. Here are some that are great:
 * Vim - Only install this if you know what Vim is and you want to use its keybindings. If you do this extension will make you very happy, if you don't it will make you very sad.
 * Editorconfig - Lets VS Code parse [editorconfig](https://editorconfig.org/) files.
 
-### Finish up later
+## Finish up later
 
 There's more configuration to do in VS code, but prior to that let's set up the actual applications we'll use with it.
 
-## Install git and bash
+# Install git and bash
 
 Like any sort of coding work, data science is done best under version control, and git is the defacto standard for that. Bash is not as obviously essential to coding/data science, but it comes with git, and using it for everything rather than the Windows shells will make it easier to apply instructions from other guides in the future, since most of them will assume you're using bash. Plus I like bash way more than the command prompt or powershell.
 
@@ -122,7 +122,7 @@ I'm going to try enabling this feature, not being able to open a python console 
 
 ![]({{ site.baseurl }}/images/windows_ds_software/git_12.png)
 
-### Customizing git
+## Customizing git
 
 There are a couple handy things that are useful to customize about git. For one, VS Code is going to make a .vscode folder anywhere we open a folder with it. We're never going to want to commit that file to version control, so we'll create a global gitignore file (as opposed to the more standard repository specific ones) and exclude that file. I got this idea from [this blog](https://julien.danjou.info/properly-managing-your-gitignore/), so credit there. In your ```%UserProfile%\.config\git``` folder, create a file named ```ignore```. Mine is quite basic at this point:
 
@@ -149,15 +149,15 @@ PS1="$PS1"'\n'                 # new line
 
 so that my conda environment would be on the same line as the rest of my setup info.
 
-### Set up ssh
+## Set up ssh
 
 This will actually work exactly the same as Linux, which is nice. GitHub has nice [docs](https://help.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh) on how to generate keys and associate them with your GitHub account, so I won't reiterate that here. Anything you can connect to via SSH rather than password you should though. It's more secure, and more convenient.
 
-#### SSH note
+### SSH note
 
 I had an old install of putty when I first set up git bash. Even though I told it to use OpenSSH I guess I still had putty set somewhere in my environment. I had to modify the ```GIT_SSH``` environment variable for my system to point to the git ssh utility, which in my case was at ```C:\Program Files\Git\usr\bin\ssh```. Most people shouldn't have to do this.
 
-### Additional utilities
+## Additional utilities
 
 Git bash has decent functionality out of the box, but there may be additional utilities you want to install. In my particular case, I'd like to be able to use ```make``` in my projects. Thanks to [this gist](https://gist.github.com/evanwill/0207876c3243bbb6863e65ec5dc3f058#file-gitbash_windows-md) I found that it's pretty easy to do. I'll reproduce the ```make``` install instructions here, but all credit for this part goes to the original author.
 
@@ -172,11 +172,11 @@ Wherever you installed git bash there should be a ```mingw64``` folder. My home 
 
 That was all I had to do to make the basic makefiles that I wanted to use. As noted above, if you want to actually build c packages or something your process will likely be more complex. For a great beginner friendly intro to makefiles in the context of python projects, check out [calm code](https://calmcode.io/makefiles/the-problem.html).
 
-### Further reading
+## Further reading
 
 The [main git page](https://git-scm.com/) has tons of resources. I've also collected a few that I found useful under my [Tagpacker page.](https://tagpacker.com/user/ian.preston?t=git)
 
-## Install Miniconda
+# Install Miniconda
 
 Next up we install Miniconda to handle python and all its libraries for data science. You could go with Anaconda over Miniconda for a complete setup out of the box, but I want to do all my actual work in custom environments, so having all that stuff in the base environment is just bloat. Open up the link to the [Win64 MiniConda installer](https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe), download and run the installer.
 
@@ -215,13 +215,13 @@ fi
 
 That should take care of it for conda installation
 
-### Actually building environments
+## Actually building environments
 
 Conda environment management is a big separate topic. [Their documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) is really good, and I refer to it regularly.
 
-## Back to VS code
+# Back to VS code
 
-### User settings
+## User settings
 
 VS code comes mostly with sensible defaults, but there are a few things I like to change. In VS code hit ```F1``` and type ```Open settings (JSON)```. If you don't see that option (it didn't pop up for me the first time I tried it) just open settings and look for a setting that tells you to update it in ```settings.json```. Below are my settings, minus the stuff that just got added through configuring the extensions described above:
 
@@ -285,15 +285,15 @@ Most of the settings have fairly clear names, and if you put them in your ```set
 
 While you can hand code in the option to have VS code use git bash it's probably easier to hit F1 again and select "Terminal: Select Default Shell" and choose it there. That will add a line to your settings that tells VS code to use git bash.
 
-### Further Resources
+## Further Resources
 
 There's tons of stuff to learn about VS code to make it super handy. At a minimum, check out their [keyboard shortcuts](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf). I'm collecting other useful resources (with a decent amount of overlap with vim stuff) on [my tagpacker](https://tagpacker.com/user/ian.preston?t=vs_code).
 
-## Cleaning up an old install
+# Cleaning up an old install
 
 I wanted to test drive my instructions before passing them along to a colleague. In order to be sure they'd actually work the way I think they should I needed to clear out my old environment. I'll document my steps here. Hopefully this will be useful for anyone else looking to start a fresh environment on Windows.
 
-### Uninstall Apps
+## Uninstall Apps
 
 Even if you installed a program as a user level install, you'll still be prompted for an Administrator password if you try and remove it from "Add/Remove Programs" in the control panel because... Windows. Running the actual uninstall exe file works fine though.
 
@@ -303,7 +303,7 @@ VS code is in a similar location and follows a similar process ```%UserProfile%\
 
 Miniconda as a user level install is in a slightly different place: ```%UserProfile%\Miniconda3\Uninstall-Miniconda3.exe``` You'll be prompted for an admin password a couple times, but if you click "no" it still seems to work, which is cool I guess. It will prompt you to reboot and when it comes back up you should be clear.
 
-### Remove miscellaneous crud
+## Remove miscellaneous crud
 
 Depending on how long you've been using your machine and how many different installs you've done you may or may not have these files. Here's a list of the things I checked for and then removed from my machine:
 
@@ -311,7 +311,7 @@ Depending on how long you've been using your machine and how many different inst
 
 * Renmants in ```C:\ProgramData```. In my case I had a folder for jupyter
 
-### Remove config files
+## Remove config files
 
 If you like how your configuration is set up there's no major harm in keeping these things. I'm just removing them to make sure I have a fair comparison to how a fresh install would go. All paths in the list of stuff I've removed are relative to ```%UserProfile%```.
 
@@ -353,6 +353,6 @@ If you like how your configuration is set up there's no major harm in keeping th
 
 As you can see, managing a python development environment creates a lot of crud on your system.
 
-## Wrapping up
+# Wrapping up
 
 That's about it! After following this guide you should have a very comfy software setup in Windows to do data science from.
