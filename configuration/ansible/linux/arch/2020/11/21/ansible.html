@@ -125,10 +125,20 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h1"><a href="#dconf">dconf</a></li>
 <li class="toc-entry toc-h1"><a href="#other-resources">Other resources</a></li>
 <li class="toc-entry toc-h1"><a href="#conclusion">Conclusion</a></li>
-</ul><h1 id="introduction">
+</ul><p>This is part 2 of a 4 part series describing how I provision my systems. Links to each part are below:</p>
+
+<ul>
+  <li><a href="https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html">part 1 - The base OS install</a></li>
+  <li><a href="https://blog.ianpreston.ca/configuration/ansible/linux/arch/2020/11/21/ansible.html">part 2 - Software install and system configuration with Ansible</a></li>
+  <li><a href="https://blog.ianpreston.ca/configuration/linux/arch/python/2020/11/25/dotfiles.html">part 3 - User level and python environment config with dotfiles and mkrc</a></li>
+  <li>
+<a href="https://blog.ianpreston.ca/configuration/linux/arch/2020/11/26/arch-tldr.html">part 4 - The tldr that wraps up how to do the whole thing from start to finish</a>]</li>
+</ul>
+
+<h1 id="introduction">
 <a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
 
-<p>My <a href="http://blog.ianpreston.ca/2020/10/14/arch-bootstrap.html">previous post</a> described how to automate a base installation of <a href="https://www.archlinux.org/">Arch</a>. This follow up post will give an overview of the next step of configuration.</p>
+<p>My <a href="https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html">previous post</a> described how to automate a base installation of <a href="https://www.archlinux.org/">Arch</a>. This follow up post will give an overview of the next step of configuration.</p>
 
 <p>After getting a base system setup there is still a ton of administrative tasks to do, like creating a user account and installing software. I accomplished this using <a href="https://www.ansible.com/">Ansible</a>. As with the previous post, I borrowed heavily from <a href="https://github.com/brennanfee/provision-arch">Brennan Fee</a> for the configuration. My copy is <a href="https://github.com/ianepreston/recipes/tree/master/ansible">here</a>. This post won’t be as in depth as the previous one, as the ansible syntax is a lot more directly readable, so in most cases it should be enough to look at the code and maybe consult the <a href="https://docs.ansible.com/">ansible docs</a> to figure out what’s going on. The sections below will outline a few of the parts that were a little tricky.</p>
 

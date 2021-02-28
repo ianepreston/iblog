@@ -93,7 +93,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      9 min read
+      10 min read
     
 </span></p>
 
@@ -164,10 +164,20 @@ window.onload = wrap_img;
 </li>
 <li class="toc-entry toc-h1"><a href="#hooks">hooks</a></li>
 <li class="toc-entry toc-h1"><a href="#conclusion">conclusion</a></li>
-</ul><h1 id="introduction">
+</ul><p>This is part 3 of a 4 part series describing how I provision my systems. Links to each part are below:</p>
+
+<ul>
+  <li><a href="https://blog.ianpreston.ca/configuration/linux/arch/bash/2020/10/14/arch-bootstrap.html">part 1 - The base OS install</a></li>
+  <li><a href="https://blog.ianpreston.ca/configuration/ansible/linux/arch/2020/11/21/ansible.html">part 2 - Software install and system configuration with Ansible</a></li>
+  <li><a href="https://blog.ianpreston.ca/configuration/linux/arch/python/2020/11/25/dotfiles.html">part 3 - User level and python environment config with dotfiles and mkrc</a></li>
+  <li>
+<a href="https://blog.ianpreston.ca/configuration/linux/arch/2020/11/26/arch-tldr.html">part 4 - The tldr that wraps up how to do the whole thing from start to finish</a>]</li>
+</ul>
+
+<h1 id="introduction">
 <a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
 
-<p>In what is hopefully the last in this series on configuring my computer I’ll go through setting up configuration files (also called dotfiles or rcs).</p>
+<p>In this post I’ll go through setting up configuration files (also called dotfiles or rcs).</p>
 
 <p>As with the earlier posts in this series I’ll be copying liberally from <a href="https://github.com/brennanfee/dotfiles">Brennan Fee</a>. Since I’m building off his guide I will also use <a href="https://thoughtbot.github.io/rcm/rcm.7.html">RCM</a> to manage my dotfiles. At the time of this writing I don’t think I need a lot of the tag or host specific tools it offers, and I could probably stick with using my old approach of a <a href="https://www.atlassian.com/git/tutorials/dotfiles">bare git repository</a> right in my home. This seems a bit cleaner though, and maybe I’ll want to extend it eventually. The idea of being able to extend things to WSL or MacOS is cool and I could see using host or tag specific features to be able to use these on work machines as well.</p>
 
