@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Trouble with reproducible conda environments | Ian’s Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Trouble with reproducible conda environments" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Sometimes my conda environments aren’t reproducible and I can’t figure out why. This documents what I’ve tried so far." />
+<meta property="og:description" content="Sometimes my conda environments aren’t reproducible and I can’t figure out why. This documents what I’ve tried so far." />
+<link rel="canonical" href="https://ianepreston.github.io/iblog/python/conda/bug/2020/05/17/conda.html" />
+<meta property="og:url" content="https://ianepreston.github.io/iblog/python/conda/bug/2020/05/17/conda.html" />
+<meta property="og:site_name" content="Ian’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-05-17T00:00:00-05:00" />
+<script type="application/ld+json">
+{"mainEntityOfPage":{"@type":"WebPage","@id":"https://ianepreston.github.io/iblog/python/conda/bug/2020/05/17/conda.html"},"url":"https://ianepreston.github.io/iblog/python/conda/bug/2020/05/17/conda.html","@type":"BlogPosting","headline":"Trouble with reproducible conda environments","dateModified":"2020-05-17T00:00:00-05:00","datePublished":"2020-05-17T00:00:00-05:00","description":"Sometimes my conda environments aren’t reproducible and I can’t figure out why. This documents what I’ve tried so far.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/iblog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://ianepreston.github.io/iblog/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/iblog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/iblog/">Ian&#39;s Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/iblog/about/">About Me</a><a class="page-link" href="/iblog/search/">Search</a><a class="page-link" href="/iblog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Trouble with reproducible conda environments</h1><p class="page-description">Sometimes my conda environments aren't reproducible and I can't figure out why. This documents what I've tried so far.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-05-17T00:00:00-05:00" itemprop="datePublished">
+        May 17, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      3 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/iblog/categories/#python">python</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/iblog/categories/#conda">conda</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/iblog/categories/#bug">bug</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#introduction">Introduction</a></li>
+<li class="toc-entry toc-h1"><a href="#the-question">The question</a></li>
+</ul><h1 id="introduction">
+<a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>I’m having trouble making reproducible conda environments. I’ve posted the question below on <a href="https://stackoverflow.com/questions/61778631/whats-wrong-with-how-im-attempting-to-create-a-reproducible-conda-environment">Stack Overflow</a> and <a href="https://www.reddit.com/r/learnpython/comments/giek8i/trouble_creating_reproducible_conda_environments/">Reddit</a> but I’ve got nothing. I’m leaving the question here for easy future reference. If I come up with a solution I’ll update this post.</p>
+
+<h1 id="the-question">
+<a class="anchor" href="#the-question" aria-hidden="true"><span class="octicon octicon-link"></span></a>The question</h1>
+
+<p>Hi everyone.</p>
+
+<p>I’m really struggling to create a reproducible conda environment. I’ll outline the approach I’ve taken so far and the issue I’ve encountered. I’d appreciate any tips for what I can do to troubleshoot next or resources I could check.</p>
+
+<p>As background, I work on a small team, and want to be able to share a copy of an environment I’ve been using with other members of my team so I can be sure we have identical versions of all the libraries required for our work.</p>
+
+<p>My current workflow is as follows:</p>
+
+<ul>
+  <li>Write out an environment file with unpinned dependencies and let conda build the environment</li>
+</ul>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">name</span><span class="pi">:</span> <span class="s">example_env_build</span>
+<span class="na">channels</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">conda-forge</span>
+    <span class="pi">-</span> <span class="s">defaults</span>
+<span class="na">dependencies</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">pandas</span>
+    <span class="pi">-</span> <span class="s">requests</span>
+</code></pre></div></div>
+
+<p>The actual environment has a lot more stuff in it, but that’s the idea</p>
+
+<ul>
+  <li>I then create the environment with <code class="language-plaintext highlighter-rouge">conda env create -f example_env_build.yml</code>
+</li>
+  <li>I export the environment so that all versions and their dependencies will be pinned with <code class="language-plaintext highlighter-rouge">conda env export -n example_env_build --no-builds --file test_export.yml</code>. I added <code class="language-plaintext highlighter-rouge">--no-builds</code> because I was finding the certain builds were getting marked as broken and causing issues and getting the version right seemed close enough for my purposes.</li>
+  <li>I edit the <code class="language-plaintext highlighter-rouge">test_export.yml</code> file and change the name to <code class="language-plaintext highlighter-rouge">example_env</code> and remove the <code class="language-plaintext highlighter-rouge">prefix</code> line from the bottom.</li>
+  <li>I build a new environment with this pinned file just to make sure it goes ok, and then share the file with the rest of my team.</li>
+</ul>
+
+<p>This has generally worked well if everyone tries to build the environment relatively quickly after the file is created. However, the whole point of being able to specify a reproducible environment is that I should be able to recreate that environment at <em>any</em> time. Someone on my team recently got a new computer so I was trying to help her set up her environment and ran into a series of conflicts. To troubleshoot I tried to rebuild the environment on my machine and ran into the same situation.</p>
+
+<p>For troubleshooting I did the following:</p>
+<ul>
+  <li>Clone my environment so I have a backup while I mess around <code class="language-plaintext highlighter-rouge">conda create --name example_env_clone --clone example_env</code>
+</li>
+  <li>Export the environment <code class="language-plaintext highlighter-rouge">conda env export -n example_env --no-builds --file example_env_rebuild.yml</code>
+</li>
+  <li>Delete the example environment so I can rebuild it <code class="language-plaintext highlighter-rouge">conda env remove --name example_env</code>
+</li>
+  <li>Try and recreate the environment I just exported <code class="language-plaintext highlighter-rouge">conda env create -f example_env_rebuild.yml</code>
+</li>
+</ul>
+
+<p>From there I ran into all sorts of version conflicts. I don’t understand this because a) These are all versions being used in a working environment and b) a lot of the “conflicts” don’t seem to be conflicts to me. As an example, here’s one from my current attempt:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Package phik conflicts <span class="k">for</span>:
+<span class="nv">phik</span><span class="o">=</span>0.9.10
+pandas-profiling<span class="o">=</span>2.4.0 -&gt; phik[version<span class="o">=</span><span class="s1">'&gt;=0.9.8'</span><span class="o">]</span>
+</code></pre></div></div>
+
+<p>I picked that one basically at random but there are tons like that. As I read it I’m trying to install phik 0.9.10, and pandas-profiling requires &gt;=0.9.8, which 0.9.10 satisfies.</p>
+
+<p>I’m at my wits end here. I’ve read a million “how to manage conda environments” guides (For example <a href="https://www.leouieda.com/blog/conda-envs.html">this</a>, <a href="https://haveagreatdata.com/posts/data-science-python-dependency-management/">this</a>, and <a href="https://towardsdatascience.com/a-guide-to-conda-environments-bc6180fc533">this</a>) along with the <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">conda environment management docs</a>. All of them seem to indicate what I’m doing should work perfectly fine, but my team and I constantly run into issues.</p>
+
+<p>Has anyone had a similar experience? Is there something I’m missing, or a resource I could consult? I’d greatly appreciate any pointers.</p>
+
+<p>Thanks</p>
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="ianepreston/iblog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/iblog/python/conda/bug/2020/05/17/conda.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/iblog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/iblog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/iblog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My blog. Mostly about data, python, and Linux.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

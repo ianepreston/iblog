@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Automating provisioning Arch continued - dotfiles | Ian’s Blog</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Automating provisioning Arch continued - dotfiles" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How I do all the user level configuration for my system, including setting up my python environment." />
+<meta property="og:description" content="How I do all the user level configuration for my system, including setting up my python environment." />
+<link rel="canonical" href="https://ianepreston.github.io/iblog/configuration/linux/arch/python/2020/11/25/dotfiles.html" />
+<meta property="og:url" content="https://ianepreston.github.io/iblog/configuration/linux/arch/python/2020/11/25/dotfiles.html" />
+<meta property="og:site_name" content="Ian’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-11-25T00:00:00-06:00" />
+<script type="application/ld+json">
+{"mainEntityOfPage":{"@type":"WebPage","@id":"https://ianepreston.github.io/iblog/configuration/linux/arch/python/2020/11/25/dotfiles.html"},"url":"https://ianepreston.github.io/iblog/configuration/linux/arch/python/2020/11/25/dotfiles.html","@type":"BlogPosting","headline":"Automating provisioning Arch continued - dotfiles","dateModified":"2020-11-25T00:00:00-06:00","datePublished":"2020-11-25T00:00:00-06:00","description":"How I do all the user level configuration for my system, including setting up my python environment.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/iblog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://ianepreston.github.io/iblog/feed.xml" title="Ian's Blog" /><link rel="shortcut icon" type="image/x-icon" href="/iblog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/iblog/">Ian&#39;s Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/iblog/about/">About Me</a><a class="page-link" href="/iblog/search/">Search</a><a class="page-link" href="/iblog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Automating provisioning Arch continued - dotfiles</h1><p class="page-description">How I do all the user level configuration for my system, including setting up my python environment.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-11-25T00:00:00-06:00" itemprop="datePublished">
+        Nov 25, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      9 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/iblog/categories/#configuration">configuration</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/iblog/categories/#linux">linux</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/iblog/categories/#arch">arch</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/iblog/categories/#python">python</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#introduction">Introduction</a></li>
+<li class="toc-entry toc-h1"><a href="#repository-setup">Repository setup</a></li>
+<li class="toc-entry toc-h1"><a href="#repository-root-files">Repository root files</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#setupsh">setup.sh</a></li>
+<li class="toc-entry toc-h2"><a href="#base-rcrc">base-rcrc</a></li>
+<li class="toc-entry toc-h2"><a href="#other-root-files">other root files</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#bash">bash</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#completions">completions</a></li>
+<li class="toc-entry toc-h2"><a href="#distrosmanjaroaliases">distros/manjaro/aliases</a></li>
+<li class="toc-entry toc-h2"><a href="#linux">linux</a></li>
+<li class="toc-entry toc-h2"><a href="#macos">macos</a></li>
+<li class="toc-entry toc-h2"><a href="#windows-wsl">windows-wsl</a></li>
+<li class="toc-entry toc-h2"><a href="#nerdfonts">nerdfonts</a></li>
+<li class="toc-entry toc-h2"><a href="#shared">shared</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#aliases">aliases</a></li>
+<li class="toc-entry toc-h3"><a href="#exports">exports</a></li>
+<li class="toc-entry toc-h3"><a href="#functions">functions</a></li>
+<li class="toc-entry toc-h3"><a href="#options">options</a></li>
+<li class="toc-entry toc-h3"><a href="#other">other</a></li>
+<li class="toc-entry toc-h3"><a href="#third-party">third party</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#bin">bin</a></li>
+<li class="toc-entry toc-h1"><a href="#filesmac-and-iterm2">files/mac and iterm2</a></li>
+<li class="toc-entry toc-h1"><a href="#rcs">rcs</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#bash_logout">bash_logout</a></li>
+<li class="toc-entry toc-h2"><a href="#bash_profile">bash_profile</a></li>
+<li class="toc-entry toc-h2"><a href="#bashrc">bashrc</a></li>
+<li class="toc-entry toc-h2"><a href="#other-files">other files</a></li>
+<li class="toc-entry toc-h2"><a href="#config-folder">config folder</a></li>
+<li class="toc-entry toc-h2"><a href="#host--folders">host-* folders</a></li>
+<li class="toc-entry toc-h2"><a href="#tag--folders">tag-* folders</a></li>
+<li class="toc-entry toc-h2"><a href="#vifm-and-vim">vifm and vim</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h1"><a href="#hooks">hooks</a></li>
+<li class="toc-entry toc-h1"><a href="#conclusion">conclusion</a></li>
+</ul><h1 id="introduction">
+<a class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<p>In what is hopefully the last in this series on configuring my computer I’ll go through setting up configuration files (also called dotfiles or rcs).</p>
+
+<p>As with the earlier posts in this series I’ll be copying liberally from <a href="https://github.com/brennanfee/dotfiles">Brennan Fee</a>. Since I’m building off his guide I will also use <a href="https://thoughtbot.github.io/rcm/rcm.7.html">RCM</a> to manage my dotfiles. At the time of this writing I don’t think I need a lot of the tag or host specific tools it offers, and I could probably stick with using my old approach of a <a href="https://www.atlassian.com/git/tutorials/dotfiles">bare git repository</a> right in my home. This seems a bit cleaner though, and maybe I’ll want to extend it eventually. The idea of being able to extend things to WSL or MacOS is cool and I could see using host or tag specific features to be able to use these on work machines as well.</p>
+
+<p>I have a hard time remembering why I structure my dotfiles the way I do, or what some features do, so hopefully by writing all this out I will make it easier to update them in the future. As a bonus maybe this will be useful to others looking to configure their own environments. I’m not going to dissect the files in this document, it’s too easy to let things get out of sync between this guide and my actual dotfiles. Instead this will focus on explaining the directory structure and what files do what, since that’s not easily captured by comments. I’ll try to heavily comment the actual files in the repository. That will have a slightly better chance of staying relevant.</p>
+
+<h1 id="repository-setup">
+<a class="anchor" href="#repository-setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Repository setup</h1>
+
+<p>Following Brennan’s example, I have two repositories to contain my configs. The first is for configuration I don’t mind sharing and it’s available <a href="https://github.com/ianepreston/dots">here</a>. In addition to that I have a second private repository for configurations that contain personal information, which I will not be sharing a link to for obvious reasons.</p>
+
+<p>Just for reference in this guide the public dotfiles repository is cloned to <code class="language-plaintext highlighter-rouge">~/.dotfiles</code>, which is the default location for RCM. The private ones are cloned to <code class="language-plaintext highlighter-rouge">~/.private_dotfiles</code>. That one I’ll have to manually specify, and if I want to add a file to it I’ll have to move it over manually.</p>
+
+<h1 id="repository-root-files">
+<a class="anchor" href="#repository-root-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>Repository root files</h1>
+
+<h2 id="setupsh">
+<a class="anchor" href="#setupsh" aria-hidden="true"><span class="octicon octicon-link"></span></a>setup.sh</h2>
+
+<p>This file either links in or generates the config file for RCM (rcrc). This is the file that identifies which tags are applicable for the machine so it has to be configured properly before the rest of the dotfiles can be brought up. The base implementation checks what Operating System you’re running and adds tags for that. At work I have it generate additional tags for which user is running it so I can create user specific tagged files (for things like email addresses).</p>
+
+<p>After running this script, if we didn’t link in an already existing <code class="language-plaintext highlighter-rouge">.rcrc</code> file then you’ll have a host specific one generated, but it won’t be saved in the repository, it will just be a reglar file. If as prompted you run <code class="language-plaintext highlighter-rouge">mkrc -o ~/.rcrc</code> it will add a host specific rcrc file to the repository.</p>
+
+<h2 id="base-rcrc">
+<a class="anchor" href="#base-rcrc" aria-hidden="true"><span class="octicon octicon-link"></span></a>base-rcrc</h2>
+
+<p>This file is used by <code class="language-plaintext highlighter-rouge">setup.sh</code> to generate the host specific <code class="language-plaintext highlighter-rouge">~/.rcrc</code>. The script adds tags to this file based on the operating system you’re running. You can add additional tags if you’d like.</p>
+
+<h2 id="other-root-files">
+<a class="anchor" href="#other-root-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>other root files</h2>
+
+<p>The other files in the root of the repository are generic repository management files. README.md will show on the base of the page on GitHub and should point back to this blog post for more details. I picked GPL V3 for the license somewhat arbitrarily. I think I used the GitHub license picker helper for it. <code class="language-plaintext highlighter-rouge">.gitignore</code> and <code class="language-plaintext highlighter-rouge">.gitattributes</code> handle files for git to ignore and enforce consistent line break characters. <code class="language-plaintext highlighter-rouge">.editorconfig</code> tells a variety of text editors things like whether to use tabs or spaces for indentation.</p>
+
+<h1 id="bash">
+<a class="anchor" href="#bash" aria-hidden="true"><span class="octicon octicon-link"></span></a>bash</h1>
+
+<p>This folder contains all the stuff that gets loaded into my profile at login. It’s where things like custom functions and the layout of my command prompt are defined.</p>
+
+<h2 id="completions">
+<a class="anchor" href="#completions" aria-hidden="true"><span class="octicon octicon-link"></span></a>completions</h2>
+
+<p>These scripts let you tab complete commands for certain applications. At the time of this writing I have completions for git, pipx and poetry installed.</p>
+
+<h2 id="distrosmanjaroaliases">
+<a class="anchor" href="#distrosmanjaroaliases" aria-hidden="true"><span class="octicon octicon-link"></span></a>distros/manjaro/aliases</h2>
+
+<p>I don’t actually use manjaro, but I wanted to keep this in as an example for myself of how to set distribution specific functionality.</p>
+
+<h2 id="linux">
+<a class="anchor" href="#linux" aria-hidden="true"><span class="octicon octicon-link"></span></a>linux</h2>
+
+<p>This has a few commands to set <code class="language-plaintext highlighter-rouge">start</code> or <code class="language-plaintext highlighter-rouge">open</code> to run <code class="language-plaintext highlighter-rouge">xdg-open</code> in linux. Makes the syntax compatible against platforms. That would be for opening a file in a gui rather than with a command line app.</p>
+
+<h2 id="macos">
+<a class="anchor" href="#macos" aria-hidden="true"><span class="octicon octicon-link"></span></a>macos</h2>
+
+<p>I don’t have any mac machines to test this stuff out on right now. It’s got a few files that presumably help make behaviour consistent on macs.</p>
+
+<h2 id="windows-wsl">
+<a class="anchor" href="#windows-wsl" aria-hidden="true"><span class="octicon octicon-link"></span></a>windows-wsl</h2>
+
+<p>Similar to the mac and linux entries above. Lets you use the same commands regardless of your specific platform.</p>
+
+<h2 id="nerdfonts">
+<a class="anchor" href="#nerdfonts" aria-hidden="true"><span class="octicon octicon-link"></span></a>nerdfonts</h2>
+
+<p>This maps a bunch of <a href="https://www.nerdfonts.com/">nerd fonts</a> to environment variables so they can be included in shell scripts. It lets you do things like put a check mark in your command prompt. Very important stuff.</p>
+
+<h2 id="shared">
+<a class="anchor" href="#shared" aria-hidden="true"><span class="octicon octicon-link"></span></a>shared</h2>
+
+<p>This is where the bulk of the content is in the bash directory. All of these files are cross platform and should work the same on linux, mac or WSL.</p>
+
+<h3 id="aliases">
+<a class="anchor" href="#aliases" aria-hidden="true"><span class="octicon octicon-link"></span></a>aliases</h3>
+
+<p>Basically these are all the command shortcuts. For example <code class="language-plaintext highlighter-rouge">alias grep="grep --color"</code> means you can just type <code class="language-plaintext highlighter-rouge">grep</code> but get nicely coloured results.</p>
+
+<h3 id="exports">
+<a class="anchor" href="#exports" aria-hidden="true"><span class="octicon octicon-link"></span></a>exports</h3>
+
+<p>This is where environment variables are set. For example <code class="language-plaintext highlighter-rouge">EDITOR=vim</code> is set here.</p>
+
+<h3 id="functions">
+<a class="anchor" href="#functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>functions</h3>
+
+<p>This is where user defined functions/tools live. For example <code class="language-plaintext highlighter-rouge">extract</code> is defined here to call the appropriate underlying app to extract a file based on its extension.</p>
+
+<h3 id="options">
+<a class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>options</h3>
+
+<p>Sets a bunch of shell options. Things like turning on vi mode for the command line.</p>
+
+<h3 id="other">
+<a class="anchor" href="#other" aria-hidden="true"><span class="octicon octicon-link"></span></a>other</h3>
+
+<p>A catch all. Code to set up conda, manage the file path, and actually set the appearance of my command prompt all live here.</p>
+
+<h3 id="third-party">
+<a class="anchor" href="#third-party" aria-hidden="true"><span class="octicon octicon-link"></span></a>third party</h3>
+
+<p>A place to dump cool code snippets you found on the internet that you want to be able to manage in your shell.</p>
+
+<h1 id="bin">
+<a class="anchor" href="#bin" aria-hidden="true"><span class="octicon octicon-link"></span></a>bin</h1>
+
+<p>As opposed to the functions in the bash folder that get added to your environment, these are scripts that are supposed to be called directly, and are therefore on the path but not parsed until they’re called. At least I think that’s the distinction. I’m not super good at bash namespaces yet so this might need to be edited.</p>
+
+<h1 id="filesmac-and-iterm2">
+<a class="anchor" href="#filesmac-and-iterm2" aria-hidden="true"><span class="octicon octicon-link"></span></a>files/mac and iterm2</h1>
+
+<p>I don’t have a mac, not totally sure what this stuff does. But maybe some day I will! Then it’ll be super nice to have this stuff enabled… I assume.</p>
+
+<h1 id="rcs">
+<a class="anchor" href="#rcs" aria-hidden="true"><span class="octicon octicon-link"></span></a>rcs</h1>
+
+<p>This is where the actual config files live</p>
+
+<h2 id="bash_logout">
+<a class="anchor" href="#bash_logout" aria-hidden="true"><span class="octicon octicon-link"></span></a>bash_logout</h2>
+
+<p>Clear the screen when you log out. I’m not sure if I actually need this, doesn’t seem to hurt</p>
+
+<h2 id="bash_profile">
+<a class="anchor" href="#bash_profile" aria-hidden="true"><span class="octicon octicon-link"></span></a>bash_profile</h2>
+
+<p>I’m sure in theory there’s a difference between this file and <code class="language-plaintext highlighter-rouge">.bashrc</code> but in practice they seem to be the same. Just map this one to load <code class="language-plaintext highlighter-rouge">~/.bashrc</code> so whichever one your terminal expects you get the same result.</p>
+
+<h2 id="bashrc">
+<a class="anchor" href="#bashrc" aria-hidden="true"><span class="octicon octicon-link"></span></a>bashrc</h2>
+
+<p><code class="language-plaintext highlighter-rouge">bashrc</code> configures your shell on login. Brennan has a nice modular design that I’m going to emulate. Basically nothing goes in bashrc itself, rather it walks through all the folders in the previously described bash folder and adds them in (at least those relevant to your Operating System). A snippet of what that looks like is below.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># We want to walk "outside" in... which is to say run all options files first, then all</span>
+<span class="c"># exports, then all functions, etc.</span>
+<span class="k">for </span>folder <span class="k">in</span> <span class="s2">"options"</span> <span class="s2">"exports"</span> <span class="s2">"functions"</span> <span class="s2">"third-party"</span> <span class="s2">"other"</span> <span class="s2">"aliases"</span><span class="p">;</span> <span class="k">do
+  for </span>base <span class="k">in</span> <span class="s2">"shared"</span> <span class="s2">"</span><span class="nv">$OS_PRIMARY</span><span class="s2">"</span> <span class="s2">"distros/</span><span class="nv">$OS_SECONDARY</span><span class="s2">"</span><span class="p">;</span> <span class="k">do
+    for </span>root <span class="k">in</span> <span class="s2">"</span><span class="nv">$DOTFILES</span><span class="s2">/bash"</span> <span class="s2">"</span><span class="nv">$DOTFILES_PRIVATE</span><span class="s2">/bash"</span><span class="p">;</span> <span class="k">do
+      if</span> <span class="o">[[</span> <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$root</span><span class="s2">/</span><span class="nv">$base</span><span class="s2">/</span><span class="nv">$folder</span><span class="s2">"</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then
+        for </span>file <span class="k">in</span> <span class="nv">$root</span>/<span class="nv">$base</span>/<span class="nv">$folder</span>/<span class="k">*</span>.bash<span class="p">;</span> <span class="k">do</span>
+          <span class="c"># shellcheck source=/dev/null</span>
+          <span class="nb">source</span> <span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span>
+        <span class="k">done
+      fi
+    done
+  done
+done</span>
+</code></pre></div></div>
+
+<p>All the actual functionality lives in the <code class="language-plaintext highlighter-rouge">bash</code> folders of the dotfiles repositories and only this file itself needs to be linked in by RCM. Distribution and OS specific functionality can be managed by just placing the script in the appropriate folder. Because of the order of execution the more granular files will overwrite more general settings if there’s a conflict.</p>
+
+<h2 id="other-files">
+<a class="anchor" href="#other-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>other files</h2>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">dircolors</code>: make <code class="language-plaintext highlighter-rouge">ls</code> show pretty colours.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">gitignore</code>: files and patterns to ignore in all git repositories</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">inputrc</code>: manage basic keyboard mappings for the shell (home to go to the beginning of the line for example)</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">prettierrc</code>: configurations for the code formatter prettier. Kind of like <a href="https://pypi.org/project/black/">black</a> for other languages</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">tmux.conf</code>: configuration for <a href="https://www.hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/">tmux</a>. I don’t use tmux enough to have strong opinions about these commands so the commenting is pretty sparse at the time of this writing</li>
+</ul>
+
+<h2 id="config-folder">
+<a class="anchor" href="#config-folder" aria-hidden="true"><span class="octicon octicon-link"></span></a>config folder</h2>
+
+<p>Polite applications store their configuration files here rather than your home directory. The <a href="https://wiki.archlinux.org/index.php/XDG_Base_Directory#User_directories">Arch Wiki</a> has a good list of polite applications and how to override some of the impolite ones. The folders all correspond to the name of the application they configure (e.g. git) so they layout is pretty self explanatory.</p>
+
+<h2 id="host--folders">
+<a class="anchor" href="#host--folders" aria-hidden="true"><span class="octicon octicon-link"></span></a>host-* folders</h2>
+
+<p>Host specific configs. Everything within here will have the same layout as the <code class="language-plaintext highlighter-rouge">rcs</code> folder above it, but will have machine specific configs. For my setup that’s just the <code class="language-plaintext highlighter-rouge">~/.rcrc</code> file that sets the tags for everything else on the machine.</p>
+
+<h2 id="tag--folders">
+<a class="anchor" href="#tag--folders" aria-hidden="true"><span class="octicon octicon-link"></span></a>tag-* folders</h2>
+
+<p>The same idea as hosts, except each host can have multiple tags. In general this is used for OS specific configurations. At work I also add tags for each user on the system for things like configuring e-mail addresses.</p>
+
+<h2 id="vifm-and-vim">
+<a class="anchor" href="#vifm-and-vim" aria-hidden="true"><span class="octicon octicon-link"></span></a>vifm and vim</h2>
+
+<p>These folder should really be under config. They’re just the settings for vim and vifm. Rude of them to demand their own space in <code class="language-plaintext highlighter-rouge">~</code>.</p>
+
+<h1 id="hooks">
+<a class="anchor" href="#hooks" aria-hidden="true"><span class="octicon octicon-link"></span></a>hooks</h1>
+
+<p>These just live in the <code class="language-plaintext highlighter-rouge">rcs</code> folder, but they’re special so I want to give them their own place. Some configurations need to have setup steps run, either before they’re installed or after. For instance, you can specify which plugins you want vim to use, but they won’t actually be installed until you run <code class="language-plaintext highlighter-rouge">vim -N -u "$HOME/.vim/vimrc.bundles" +PlugUpdate +PlugClean! +qa -</code>. You can put a script that does that in <code class="language-plaintext highlighter-rouge">hooks/post-up</code> and it will automatically run that after loading in your configuration files. I’m pushing this feature a little beyond what it’s intended to install some user level things like miniconda and pyenv. Doing that with this tool doesn’t quite fit its intended use, but it seems to work so I’ll stick with it.</p>
+
+<h1 id="conclusion">
+<a class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>conclusion</h1>
+
+<p>This guide gave an overview of the structure of my dotfiles. For more details on the tool used to set them up check out <a href="https://thoughtbot.com/blog/rcm-for-rc-files-in-dotfiles-repos">RCM</a> and for the specifics of the configurations check the files themselves in <a href="https://github.com/ianepreston/dots">my repository</a>.</p>
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="ianepreston/iblog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/iblog/configuration/linux/arch/python/2020/11/25/dotfiles.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/iblog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/iblog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/iblog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>My blog. Mostly about data, python, and Linux.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/ianepreston" title="ianepreston"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/iPrestonBC" title="iPrestonBC"><svg class="svg-icon grey"><use xlink:href="/iblog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
